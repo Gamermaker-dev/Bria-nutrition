@@ -1,0 +1,19 @@
+# Use root/example as user/password credentials
+
+services:
+
+  db:
+    image: mariadb
+    restart: always
+    ports:
+       - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: Bxc_26_Nut
+      MARIADB_USER: adkins_admin
+      MARIADB_PASSWORD: CZVa7ZsXrlk1m4znd*JIaYR%
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080

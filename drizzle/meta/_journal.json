@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1773602297589,
+      "tag": "0000_material_wasp",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1773611487104,
+      "tag": "0001_damp_lester",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773720628713,
+      "tag": "0002_fat_squirrel_girl",
+      "breakpoints": true
+    }
+  ]
+}
