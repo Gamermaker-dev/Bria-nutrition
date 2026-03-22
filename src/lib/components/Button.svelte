@@ -1,7 +1,15 @@
 <script lang="ts">
 	import type { ResolvedPathname } from '$app/types';
-	import type { Snippet } from 'svelte';
+	import type { Props } from '$lib/types/Props';
 	import type { MouseEventHandler } from 'svelte/elements';
+
+	type ButtonProps = Props & {
+		formaction?: string;
+		type?: string;
+		onclick?: MouseEventHandler<HTMLButtonElement>;
+		isLink?: boolean;
+		href?: ResolvedPathname;
+	}
 
 	let {
 		formaction,
@@ -10,14 +18,7 @@
 		onclick,
 		isLink = false,
 		...others
-	}: {
-		formaction?: string;
-		type?: string;
-		children?: Snippet<[]>;
-		onclick?: MouseEventHandler<HTMLButtonElement>;
-		isLink?: boolean;
-		href?: ResolvedPathname;
-	} = $props();
+	}: ButtonProps = $props();
 </script>
 
 {#if isLink}

@@ -3,8 +3,9 @@
 	import type { Snippet } from 'svelte';
 	import type { LayoutServerData } from './$types';
 	import Button from '$lib/components/Button.svelte';
-	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import NavbarItem from '$lib/components/bulma/NavbarItem.svelte';
+	import Form from '$lib/components/form/Form.svelte';
 
 	let { data, children }: { data: LayoutServerData; children: Snippet<[]> } = $props();
 </script>
@@ -18,9 +19,9 @@
 		<nav class="navbar">
 			<div class="container">
 				<div class="navbar-brand">
-					<a class="navbar-item">
+					<NavbarItem>
 						<p class="title has-text-light">BRIA NUTRITION</p>
-					</a>
+					</NavbarItem>
 					<span class="navbar-burger" data-target="navbarMenuHeroA">
 						<span></span>
 						<span></span>
@@ -30,38 +31,55 @@
 				</div>
 				<div id="navbarMenuHeroA" class="navbar-menu">
 					<div class="navbar-end">
-						<a class="navbar-item is-active"> Home </a>
-						<a class="navbar-item"> Examples </a>
-						<a class="navbar-item"> Documentation </a>
+						{#each data.navbar as item (item.href)}
+							<NavbarItem {...item}>{item.text}</NavbarItem>
+						{/each}
 						{#if data.user}
-							<span class="navbar-item">
-								{#if data.user.image}
-									<figure class="image is-32x32">
-										<img class="is-rounded" src={data.user.image} alt={data.user.name} />
-									</figure>
-								{:else}
-									<div
-										class="has-background-grey has-text-white is-flex is-justify-content-center is-align-items-center"
-										style="width: 32px; height: 32px; font-size: 1.5rem; font-weight: bold; border-radius: 50%;"
-									>
-										{data.user.name.charAt(0)}
-									</div>
-								{/if}
-							</span>
-							<div class="navbar-item">
-								<form method="POST" use:enhance>
-									<Button type="light" formaction="/login?/signOut"
-										><strong>Sign Out</strong></Button
-									>
-								</form>
-							</div>
+							<NavbarItem isDiv hasDropdown isHoverable>
+								<!-- svelte-ignore a11y_missing_attribute -->
+								<a class="navbar-link">
+									{#if data.user.image}
+										<figure class="image is-32x32">
+											<img class="is-rounded" src={data.user.image} alt={data.user.name} />
+										</figure>
+									{:else}
+										<div
+											class="has-background-grey has-text-white is-flex is-justify-content-center is-align-items-center"
+											style="width: 32px; height: 32px; font-size: 1.5rem; font-weight: bold; border-radius: 50%;"
+										>
+											{data.user.name.charAt(0)}
+										</div>
+									{/if}
+								</a>
+
+								<div class="navbar-dropdown">
+									<NavbarItem isDiv>
+										<Form method="POST" id="signout" action="/login?/signOut">
+											<!-- svelte-ignore a11y_click_events_have_key_events -->
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<a
+												class="navbar-item"
+												onclick={() => {
+													const formEl = document.getElementById(
+														'signout'
+													) as HTMLFormElement | null;
+
+													if (formEl) formEl.submit();
+												}}
+											>
+												<strong>Sign Out</strong></a
+											>
+										</Form>
+									</NavbarItem>
+								</div>
+							</NavbarItem>
 						{:else}
-							<div class="navbar-item">
+							<NavbarItem isDiv>
 								<div class="buttons">
 									<Button type="light" isLink href={resolve('/login')}>Sign In</Button>
 									<Button type="dark" isLink href={resolve('/register')}>Register</Button>
 								</div>
-							</div>
+							</NavbarItem>
 						{/if}
 					</div>
 				</div>
