@@ -6,11 +6,11 @@
 	let { form }: { form: ActionData } = $props();
 </script>
 
-<section class="section">
-	<h1 class="title">Login</h1>
+<div class="grid grid-cols-1 gap-4">
+	<div class="text-xl font-bold">Login</div>
 	<LoginForm />
-	<p style="color: red">{form?.message ?? ''}</p>
+	<p class="text-danger-400">{form?.message ?? ''}</p>
 
 	<hr />
 	<SocialLoginForm />
-</section>
+</div>

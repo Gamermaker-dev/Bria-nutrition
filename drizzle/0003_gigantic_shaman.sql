@@ -1,0 +1,1 @@
+ALTER TABLE `profile` ADD `sex` varchar(1) NOT NULL;

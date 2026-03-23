@@ -7,6 +7,10 @@ export const load: LayoutServerLoad = async (event) => {
 		return redirect(302, '/login');
 	}
 
+	// if (event.locals.user && !event.locals.profile && event.route.id !== '/createProfile') {
+	// 	return redirect(302, '/createProfile');
+	// }
+
 	const navbar: NavbarItemProps[] = event.locals.user
 		? [
 				{ text: 'Home', isActive: event.route.id === '/', href: '/' },
@@ -14,5 +18,5 @@ export const load: LayoutServerLoad = async (event) => {
 			]
 		: [];
 
-	return { user: event.locals.user, navbar };
+	return { user: event.locals.user, navbar, url: event.url };
 };

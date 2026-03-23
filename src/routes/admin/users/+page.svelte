@@ -1,34 +1,35 @@
 <script lang="ts">
 	import type { PageServerData } from './$types';
+	import { Table } from 'svelte-ux';
 
 	export let data: PageServerData;
+
+	const formatEmailVerified = (val: boolean) => (val ? 'YES' : 'NO');
+
+	const formatDate = (val: Date | string) => {
+		let date = new Date(val);
+		return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+	};
 </script>
 
-<section class="section">
-	<table class="table is-bordered is-hoverable">
-		<thead>
-			<tr class="is-primary">
-				<th>ID</th>
-				<th>Name</th>
-				<th>Email</th>
-				<th>Email Verified</th>
-				<th>Image</th>
-				<th>Date Created</th>
-				<th>Date Updated</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each data.users as user (user.id)}
-				<tr>
-					<td>{user.id}</td>
-					<td>{user.name}</td>
-					<td>{user.email}</td>
-					<td>{user.emailVerified}</td>
-					<td>{user.image}</td>
-					<td>{user.createdAt}</td>
-					<td>{user.updatedAt}</td>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
-</section>
+<div class="container p-4">
+	<div class="grid grid-flow-col gap-4">
+		<Table
+			data={data.users}
+			classes={{ thead: 'bg-blue-500 text-white font-bold' }}
+			columns={[
+				{ name: 'id', align: 'left', header: 'ID' },
+				{ name: 'name', align: 'left', header: 'Name' },
+				{ name: 'email', align: 'left', header: 'Email' },
+				{
+					name: 'emailVerified',
+					align: 'left',
+					header: 'Email Verified',
+					format: formatEmailVerified
+				},
+				{ name: 'createdAt', align: 'left', header: 'Date Created', format: formatDate },
+				{ name: 'updatedAt', align: 'left', header: 'Date Updated', format: formatDate }
+			]}
+		/>
+	</div>
+</div>

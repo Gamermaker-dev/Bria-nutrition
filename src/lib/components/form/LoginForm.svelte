@@ -1,11 +1,12 @@
 <script lang="ts">
-	import Button from '../Button.svelte';
 	import Form from './Form.svelte';
-	import TextField from './TextField.svelte';
+	import { Button, TextField } from 'svelte-ux';
 </script>
 
-<Form action="?/signnEmail">
-	<TextField label="Email" type="email" name="email" />
-	<TextField label="Password" type="password" name="password" />
-	<Button type="primary">Sign in</Button>
+<Form id="signInForm" action="?/signInEmail">
+	<div class="grid grid-cols-1 gap-4 content-center justify-start justify-items-start place-content-center">
+		<TextField label="Email" type="email" name="email" />
+		<TextField label="Password" type="password" name="password" />
+		<Button class="bg-primary-400" type="submit">Sign in</Button>
+	</div>
 </Form>

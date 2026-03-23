@@ -1,4 +1,5 @@
 import type { User, Session } from 'better-auth/minimal';
+import type { Profile } from '$lib/server/db/user/profile.schema.ts';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -7,6 +8,7 @@ declare global {
 		interface Locals {
 			user?: User;
 			session?: Session;
+			profile?: Profile;
 		}
 
 		// interface Error {}

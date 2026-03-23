@@ -5,7 +5,9 @@
 	import CardContent from '$lib/components/bulma/Card/CardContent.svelte';
 	import CardHeader from '$lib/components/bulma/Card/CardHeader.svelte';
 	import Icon from '$lib/components/bulma/Icon.svelte';
-	import { mdiAccount, mdiSeed } from '@mdi/js';
+	import { mdiAccount, mdiFile, mdiSeed } from '@mdi/js';
+	import { ListItem } from 'svelte-ux';
+	import { goto } from '$app/navigation';
 
 	let cards: { title: string; icon: string; link: ResolvedPathname; description: string }[] = [
 		{ title: 'Users', icon: mdiAccount, link: '/admin/users', description: 'List of Users' },
@@ -14,34 +16,24 @@
 			icon: mdiSeed,
 			link: '/admin/nutrients',
 			description: 'List of nutrients.'
+		},
+		{
+			title: 'Import',
+			icon: mdiFile,
+			link: '/admin/import',
+			description: 'Import data from CSV files.'
 		}
 	];
 </script>
 
-<section class="section">
-	<div class="grid">
-		{#each cards as card (card.title)}
-			<div class="cell">
-				<a href={resolve(card.link)}>
-					<Card>
-						{#snippet header()}
-							<CardHeader bulma={{ title: 'has-text-primary', icon: 'has-text-primary' }}>
-								{#snippet title()}
-									{card.title}
-								{/snippet}
-								{#snippet icon()}
-									<Icon icon={card.icon} />
-								{/snippet}
-							</CardHeader>
-						{/snippet}
-						{#snippet content()}
-							<CardContent>
-								<div class="content">{card.description}</div>
-							</CardContent>
-						{/snippet}
-					</Card>
-				</a>
-			</div>
-		{/each}
-	</div>
-</section>
+<div class="grid grid-cols-2 gap-4">
+	{#each cards as card (card.title)}
+		<ListItem
+			title={card.title}
+			subheading={card.description}
+			icon={card.icon}
+			classes={{ root: 'hover:cursor-pointer' }}
+			on:click={() => goto(resolve(card.link))}
+		/>
+	{/each}
+</div>
