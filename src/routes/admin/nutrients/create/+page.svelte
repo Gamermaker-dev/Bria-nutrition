@@ -23,10 +23,14 @@
 	{/if}
 
 	<Form action="/admin/nutrients/create">
+	    <div class="grid gap-4">
 		<TextField label="Name" name="name" />
+		<TextField label="FDC Numbers" name="fdcNumbers" />
+		<TextField label="Unit" name="unit" />
 		<Button class="bg-primary text-white m-4" type="submit">Submit</Button>
 		<Button class="bg-gray-300 m-4" type="button" onclick={() => goto(resolve('/admin/nutrients'))}
 			>Back</Button
 		>
+		</div>
 	</Form>
 </div>

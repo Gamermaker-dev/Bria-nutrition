@@ -1,32 +1,53 @@
 <script lang="ts">
-	import { Button, Table } from 'svelte-ux';
-	import type { PageServerData } from './$types';
+	import { Button, ButtonGroup, Dialog, Table } from 'svelte-ux';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { mdiPlus } from '@mdi/js';
+	import { mdiPlus, mdiUpload } from '@mdi/js';
+	import { formatDate } from '$lib/util';
+	import { enhance } from '$app/forms';
 
-	export let data: PageServerData;
+	let { data, form } = $props();
 
-	const formatDate = (val: Date | string) => {
-		let date = new Date(val);
-		return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-	};
+	let open: boolean = $state(false);
+
+	$effect(() => {
+		if (form?.status === 200) {
+			open = false;
+		}
+	});
 </script>
 
-<div class="container p-4">
-	<div class="grid grid-flow-col gap-4">
-		<Table
-			data={data.nutrients}
-			classes={{ thead: 'bg-blue-500 text-white font-bold' }}
-			columns={[
-				{ name: 'id', align: 'left', header: 'ID' },
-				{ name: 'name', align: 'left', header: 'Name' },
-				{ name: 'dateAdded', align: 'left', header: 'Date Created', format: formatDate },
-			]}
-		/>
-	</div>
+<Dialog bind:open>
+	<div slot="title">Import Nutrients</div>
+	<form method="post" action="/admin/nutrients?/import" enctype="multipart/form-data" use:enhance>
+		<div class="grid gap-4">
+			<input type="file" name="importFile" accept=".csv" />
+			<Button class="w-[10%] bg-primary text-white" type="submit">Submit</Button>
+		</div>
+	</form>
+</Dialog>
 
-	<Button class="m-4 bg-primary text-white" icon={mdiPlus} type="button" onclick={() => goto(resolve('/admin/nutrients/create'))}
-		>Add Nutrient</Button
-	>
+<div class="flex flex-col gap-4 mx-auto">
+	<Table
+		data={data.nutrients}
+		classes={{ table: 'flex-1', thead: 'bg-blue-500 text-white font-bold' }}
+		on:cellClick={(e) => goto(resolve('/admin/nutrients/[id]', { id: `${e.detail.rowData.id}` }))}
+		columns={[
+			{ name: 'id', align: 'left', header: 'ID' },
+			{ name: 'name', align: 'left', header: 'Name' },
+			{ name: 'unit', align: 'left', header: 'Unit' },
+			{ name: 'fdcNumbers', align: 'left', header: 'FDC Number' },
+			{ name: 'dateAdded', align: 'left', header: 'Date Created', format: formatDate }
+		]}
+	/>
+
+	<ButtonGroup class="place-self-end gap-2">
+		<Button
+			class="bg-primary text-white"
+			icon={mdiPlus}
+			type="button"
+			onclick={() => goto(resolve('/admin/nutrients/create'))}>Add Nutrient</Button
+		>
+		<Button class="bg-blue-500 text-white" icon={mdiUpload} type="button" onclick={() => (open = true)}>Import</Button>
+	</ButtonGroup>
 </div>

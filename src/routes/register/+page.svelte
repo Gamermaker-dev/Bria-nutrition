@@ -1,19 +1,21 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
-	import TextField from '$lib/components/form/TextField.svelte';
+	import { Button, TextField } from 'svelte-ux';
+
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
 </script>
 
-<section class="section">
-	<h1 class="title">Register</h1>
+<div class="container p-4">
+	<span class="text-xl font-bold">Register</span>
 	<form method="post" action="?/signUp" use:enhance>
-		<TextField label="Email" type="email" name="email" />
-		<TextField label="Password" type="password" name="password" />
-        <TextField label="Name" name="name" />
-		<Button type="primary">Sign up</Button>
+		<div class="grid gap-4">
+			<TextField label="Email" type="email" name="email" />
+			<TextField label="Password" type="password" name="password" />
+			<TextField label="Name" name="name" />
+			<Button class="bg-primary-400 text-white place-self-start" type="submit">Sign up</Button>
+		</div>
 	</form>
 	<p style="color: red">{form?.message ?? ''}</p>
-</section>
+</div>

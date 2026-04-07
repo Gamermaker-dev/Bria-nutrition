@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Props } from '$lib/types/Props.ts';
+	import type { Props } from '$lib/types/Props';
 	import Icon from '$lib/components/bulma/Icon.svelte';
 
 	type StepProps = Props & { steps: { id: number; name: string; icon: string }[]; phase: number; }

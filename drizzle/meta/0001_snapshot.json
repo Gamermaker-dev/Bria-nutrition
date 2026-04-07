@@ -1,978 +1,9 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "eef9289f-c49f-487a-8cd2-d420d6f79c1f",
-  "prevId": "eaf7bd90-0844-4336-a5d9-7ae717828e66",
+  "id": "0a9c7033-547b-44e5-85a2-2056a8f91068",
+  "prevId": "975afb58-c653-4675-bb26-cb6df5c0bbcf",
   "tables": {
-    "ingredient": {
-      "name": "ingredient",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "ingredient_id": {
-          "name": "ingredient_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "ingredient_id_unique": {
-          "name": "ingredient_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "ingredient_nutrient": {
-      "name": "ingredient_nutrient",
-      "columns": {
-        "ingredient_id": {
-          "name": "ingredient_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "nutrient_id": {
-          "name": "nutrient_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "float",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "ingredient_nutrient_ingredient_id_ingredient_id_fk": {
-          "name": "ingredient_nutrient_ingredient_id_ingredient_id_fk",
-          "tableFrom": "ingredient_nutrient",
-          "tableTo": "ingredient",
-          "columnsFrom": [
-            "ingredient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "ingredient_nutrient_nutrient_id_nutrient_id_fk": {
-          "name": "ingredient_nutrient_nutrient_id_nutrient_id_fk",
-          "tableFrom": "ingredient_nutrient",
-          "tableTo": "nutrient",
-          "columnsFrom": [
-            "nutrient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "ingredient_nutrient_ingredient_id": {
-          "name": "ingredient_nutrient_ingredient_id",
-          "columns": [
-            "ingredient_id"
-          ]
-        },
-        "ingredient_nutrient_nutrient_id": {
-          "name": "ingredient_nutrient_nutrient_id",
-          "columns": [
-            "nutrient_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "meal": {
-      "name": "meal",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "added_by": {
-          "name": "added_by",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_updated": {
-          "name": "date_updated",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "date_deleted": {
-          "name": "date_deleted",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "meal_added_by_user_id_fk": {
-          "name": "meal_added_by_user_id_fk",
-          "tableFrom": "meal",
-          "tableTo": "user",
-          "columnsFrom": [
-            "added_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "meal_id": {
-          "name": "meal_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "meal_id_unique": {
-          "name": "meal_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "meal_category": {
-      "name": "meal_category",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "meal_category_id": {
-          "name": "meal_category_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "meal_category_id_unique": {
-          "name": "meal_category_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "meal_ingredient": {
-      "name": "meal_ingredient",
-      "columns": {
-        "meal_id": {
-          "name": "meal_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "ingredient_id": {
-          "name": "ingredient_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "float",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "meal_ingredient_meal_id_meal_id_fk": {
-          "name": "meal_ingredient_meal_id_meal_id_fk",
-          "tableFrom": "meal_ingredient",
-          "tableTo": "meal",
-          "columnsFrom": [
-            "meal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "meal_ingredient_ingredient_id_ingredient_id_fk": {
-          "name": "meal_ingredient_ingredient_id_ingredient_id_fk",
-          "tableFrom": "meal_ingredient",
-          "tableTo": "ingredient",
-          "columnsFrom": [
-            "ingredient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "meal_ingredient_meal_id": {
-          "name": "meal_ingredient_meal_id",
-          "columns": [
-            "meal_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "nutrient": {
-      "name": "nutrient",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "nutrient_id": {
-          "name": "nutrient_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "nutrient_id_unique": {
-          "name": "nutrient_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "profile": {
-      "name": "profile",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "first_name": {
-          "name": "first_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "last_name": {
-          "name": "last_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "age": {
-          "name": "age",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "height_inch": {
-          "name": "height_inch",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "height_feet": {
-          "name": "height_feet",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "weight": {
-          "name": "weight",
-          "type": "decimal(4,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_updated": {
-          "name": "date_updated",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "date_deleted": {
-          "name": "date_deleted",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "profile_user_id_user_id_fk": {
-          "name": "profile_user_id_user_id_fk",
-          "tableFrom": "profile",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "profile_id": {
-          "name": "profile_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "profile_id_unique": {
-          "name": "profile_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "recommendation": {
-      "name": "recommendation",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "calories": {
-          "name": "calories",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "carbs": {
-          "name": "carbs",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "protein": {
-          "name": "protein",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "fat": {
-          "name": "fat",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "water": {
-          "name": "water",
-          "type": "decimal(2,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_updated": {
-          "name": "date_updated",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "date_deleted": {
-          "name": "date_deleted",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "recommendation_user_id_user_id_fk": {
-          "name": "recommendation_user_id_user_id_fk",
-          "tableFrom": "recommendation",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "recommendation_id": {
-          "name": "recommendation_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "recommendation_id_unique": {
-          "name": "recommendation_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "recommendation_vitamin": {
-      "name": "recommendation_vitamin",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_a": {
-          "name": "vitamin_a",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_c": {
-          "name": "vitamin_c",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_d": {
-          "name": "vitamin_d",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_b6": {
-          "name": "vitamin_b6",
-          "type": "decimal(2,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_e": {
-          "name": "vitamin_e",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_k": {
-          "name": "vitamin_k",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "thiaman": {
-          "name": "thiaman",
-          "type": "decimal(2,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "vitamin_b12": {
-          "name": "vitamin_b12",
-          "type": "decimal(3,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "riboflavin": {
-          "name": "riboflavin",
-          "type": "decimal(2,1)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "folate": {
-          "name": "folate",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "niacin": {
-          "name": "niacin",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "choline": {
-          "name": "choline",
-          "type": "decimal(3,2)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "pantothenic_acid": {
-          "name": "pantothenic_acid",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "biotin": {
-          "name": "biotin",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_updated": {
-          "name": "date_updated",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "date_deleted": {
-          "name": "date_deleted",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "recommendation_vitamin_user_id_user_id_fk": {
-          "name": "recommendation_vitamin_user_id_user_id_fk",
-          "tableFrom": "recommendation_vitamin",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "recommendation_vitamin_id": {
-          "name": "recommendation_vitamin_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "recommendation_vitamin_id_unique": {
-          "name": "recommendation_vitamin_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "task": {
-      "name": "task",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "priority": {
-          "name": "priority",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "task_id": {
-          "name": "task_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "task_id_unique": {
-          "name": "task_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "user_meal": {
-      "name": "user_meal",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(36)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "meal_id": {
-          "name": "meal_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "category_id": {
-          "name": "category_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date_added": {
-          "name": "date_added",
-          "type": "datetime",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_meal_user_id_user_id_fk": {
-          "name": "user_meal_user_id_user_id_fk",
-          "tableFrom": "user_meal",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_meal_meal_id_meal_id_fk": {
-          "name": "user_meal_meal_id_meal_id_fk",
-          "tableFrom": "user_meal",
-          "tableTo": "meal",
-          "columnsFrom": [
-            "meal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_meal_category_id_meal_category_id_fk": {
-          "name": "user_meal_category_id_meal_category_id_fk",
-          "tableFrom": "user_meal",
-          "tableTo": "meal_category",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "user_meal_user_id": {
-          "name": "user_meal_user_id",
-          "columns": [
-            "user_id"
-          ]
-        },
-        "user_meal_meal_id": {
-          "name": "user_meal_meal_id",
-          "columns": [
-            "meal_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "vitamin_age_dri": {
-      "name": "vitamin_age_dri",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "nutrient_id": {
-          "name": "nutrient_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "min_age": {
-          "name": "min_age",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "max_age": {
-          "name": "max_age",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sex": {
-          "name": "sex",
-          "type": "varchar(6)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "is_pregnant": {
-          "name": "is_pregnant",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "is_lactating": {
-          "name": "is_lactating",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "float",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "vitamin_age_dri_nutrient_id_nutrient_id_fk": {
-          "name": "vitamin_age_dri_nutrient_id_nutrient_id_fk",
-          "tableFrom": "vitamin_age_dri",
-          "tableTo": "nutrient",
-          "columnsFrom": [
-            "nutrient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "vitamin_age_dri_id": {
-          "name": "vitamin_age_dri_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "vitamin_age_dri_id_unique": {
-          "name": "vitamin_age_dri_id_unique",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
     "account": {
       "name": "account",
       "columns": {
@@ -1344,6 +375,838 @@
       "compositePrimaryKeys": {
         "verification_id": {
           "name": "verification_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "activity_level": {
+      "name": "activity_level",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "multiplier": {
+          "name": "multiplier",
+          "type": "decimal(4,3)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "activity_level_id": {
+          "name": "activity_level_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "activity_level_name_unique": {
+          "name": "activity_level_name_unique",
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "profile": {
+      "name": "profile",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "physical_type_id": {
+          "name": "physical_type_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "height_inch": {
+          "name": "height_inch",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "height_feet": {
+          "name": "height_feet",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "decimal(4,1)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activityLevelId": {
+          "name": "activityLevelId",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "age": {
+          "name": "age",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "TIMESTAMPDIFF(YEAR, `profile`.`birth_date`, CURDATE())",
+            "type": "virtual"
+          }
+        },
+        "next_profile_id": {
+          "name": "next_profile_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_updated": {
+          "name": "date_updated",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_deleted": {
+          "name": "date_deleted",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "userId_indx": {
+          "name": "userId_indx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "profile_user_id_user_id_fk": {
+          "name": "profile_user_id_user_id_fk",
+          "tableFrom": "profile",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "profile_physical_type_id_physical_type_id_fk": {
+          "name": "profile_physical_type_id_physical_type_id_fk",
+          "tableFrom": "profile",
+          "tableTo": "physical_type",
+          "columnsFrom": [
+            "physical_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "profile_activityLevelId_activity_level_id_fk": {
+          "name": "profile_activityLevelId_activity_level_id_fk",
+          "tableFrom": "profile",
+          "tableTo": "activity_level",
+          "columnsFrom": [
+            "activityLevelId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "next_profile_foreignKey": {
+          "name": "next_profile_foreignKey",
+          "tableFrom": "profile",
+          "tableTo": "profile",
+          "columnsFrom": [
+            "next_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "profile_id": {
+          "name": "profile_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "nutrient": {
+      "name": "nutrient",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fdc_numbers": {
+          "name": "fdc_numbers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "nutrient_id": {
+          "name": "nutrient_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "food": {
+      "name": "food",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fdcId": {
+          "name": "fdcId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "userId_indx": {
+          "name": "userId_indx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "food_id": {
+          "name": "food_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "food_nutrient": {
+      "name": "food_nutrient",
+      "columns": {
+        "food_id": {
+          "name": "food_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nutrient_id": {
+          "name": "nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "float",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "foodId_indx": {
+          "name": "foodId_indx",
+          "columns": [
+            "food_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "food_nutrient_food_id_food_id_fk": {
+          "name": "food_nutrient_food_id_food_id_fk",
+          "tableFrom": "food_nutrient",
+          "tableTo": "food",
+          "columnsFrom": [
+            "food_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "food_nutrient_nutrient_id_nutrient_id_fk": {
+          "name": "food_nutrient_nutrient_id_nutrient_id_fk",
+          "tableFrom": "food_nutrient",
+          "tableTo": "nutrient",
+          "columnsFrom": [
+            "nutrient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "food_nutrient_primary_key": {
+          "name": "food_nutrient_primary_key",
+          "columns": [
+            "food_id",
+            "nutrient_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "meal": {
+      "name": "meal",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "meal_date": {
+          "name": "meal_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_updated": {
+          "name": "date_updated",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "date_deleted": {
+          "name": "date_deleted",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "userMeal_indx": {
+          "name": "userMeal_indx",
+          "columns": [
+            "meal_date",
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "meal_user_id_user_id_fk": {
+          "name": "meal_user_id_user_id_fk",
+          "tableFrom": "meal",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "meal_id": {
+          "name": "meal_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "meal_food": {
+      "name": "meal_food",
+      "columns": {
+        "meal_id": {
+          "name": "meal_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "food_id": {
+          "name": "food_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "float",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "mealId_indx": {
+          "name": "mealId_indx",
+          "columns": [
+            "meal_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "meal_food_meal_id_meal_id_fk": {
+          "name": "meal_food_meal_id_meal_id_fk",
+          "tableFrom": "meal_food",
+          "tableTo": "meal",
+          "columnsFrom": [
+            "meal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "meal_food_food_id_food_id_fk": {
+          "name": "meal_food_food_id_food_id_fk",
+          "tableFrom": "meal_food",
+          "tableTo": "food",
+          "columnsFrom": [
+            "food_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "meal_food_primary_key": {
+          "name": "meal_food_primary_key",
+          "columns": [
+            "meal_id",
+            "food_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "role": {
+      "name": "role",
+      "columns": {
+        "int": {
+          "name": "int",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "role_int": {
+          "name": "role_int",
+          "columns": [
+            "int"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "user_role": {
+      "name": "user_role",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "user_role_usrId_indx": {
+          "name": "user_role_usrId_indx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "user_role_roleId_indx": {
+          "name": "user_role_roleId_indx",
+          "columns": [
+            "role_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_role_userId_user_id_fk": {
+          "name": "user_role_userId_user_id_fk",
+          "tableFrom": "user_role",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_role_role_id_role_int_fk": {
+          "name": "user_role_role_id_role_int_fk",
+          "tableFrom": "user_role",
+          "tableTo": "role",
+          "columnsFrom": [
+            "role_id"
+          ],
+          "columnsTo": [
+            "int"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_role_primary_key": {
+          "name": "user_role_primary_key",
+          "columns": [
+            "userId",
+            "role_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "recommendation": {
+      "name": "recommendation",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nutrient_id": {
+          "name": "nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "min_age": {
+          "name": "min_age",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "max_age": {
+          "name": "max_age",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "physical_type_id": {
+          "name": "physical_type_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "float",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "nutrientId_indx": {
+          "name": "nutrientId_indx",
+          "columns": [
+            "nutrient_id"
+          ],
+          "isUnique": false
+        },
+        "physicalTypeId_indx": {
+          "name": "physicalTypeId_indx",
+          "columns": [
+            "physical_type_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "recommendation_nutrient_id_nutrient_id_fk": {
+          "name": "recommendation_nutrient_id_nutrient_id_fk",
+          "tableFrom": "recommendation",
+          "tableTo": "nutrient",
+          "columnsFrom": [
+            "nutrient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "recommendation_physical_type_id_physical_type_id_fk": {
+          "name": "recommendation_physical_type_id_physical_type_id_fk",
+          "tableFrom": "recommendation",
+          "tableTo": "physical_type",
+          "columnsFrom": [
+            "physical_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recommendation_id": {
+          "name": "recommendation_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "physical_type": {
+      "name": "physical_type",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "physical_type_id": {
+          "name": "physical_type_id",
           "columns": [
             "id"
           ]

@@ -1,9 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { parse } from 'csv-parse/sync';
-import type { VitaminAgeDRIInput } from '$lib/server/db/schema';
-import { nutrientApi } from '$lib/server/db/nutrient';
-import { vitaminAgeDRIApi } from '$lib/server/db/vitamin_age_dri';
+import type { RecommendationInput } from '$lib/server/db/schema';
+import { nutrientController, recommendationController } from '$lib/server/controllers';
 
 type importData = {
 	Age: string;
@@ -14,9 +13,13 @@ type importData = {
 };
 
 export const load: PageServerLoad = async () => {
-	const nutrients = await nutrientApi.getNutrientDropdown();
+	try {
+		const nutrients = await nutrientController.getDropdown();
 
-	return { nutrients };
+		return { nutrients };
+	} catch (err) {
+		throw error(500, { message: `${err}` });
+	}
 };
 
 export const actions: Actions = {
@@ -59,7 +62,7 @@ export const actions: Actions = {
 
 		console.log(jsonData);
 
-		const inputs: VitaminAgeDRIInput[] = jsonData.reduce((curr, val) => {
+		const inputs: RecommendationInput[] = jsonData.reduce((curr, val) => {
 			let minAge: number = 0;
 			let maxAge: number = 0;
 
@@ -76,67 +79,59 @@ export const actions: Actions = {
 				maxAge = parseInt(ageString[1], 10);
 			}
 
-			const maleInput: VitaminAgeDRIInput = {
+			const maleInput: RecommendationInput = {
 				nutrientId,
 				minAge,
 				maxAge: maxAge !== 0 ? maxAge : undefined,
-				sex: 'male',
-				amount: parseFloat(val.Male.replaceAll(/\D/g, '').trim()),
-				isPregnant: false,
-				isLactating: false
+				physicalTypeId: 1,
+				amount: parseFloat(val.Male.replaceAll(/\D/g, '').trim())
 			};
 
 			curr.push(maleInput);
 
-			const femaleInput: VitaminAgeDRIInput = {
+			const femaleInput: RecommendationInput = {
 				nutrientId,
 				minAge,
 				maxAge: maxAge !== 0 ? maxAge : undefined,
-				sex: 'female',
-				amount: parseFloat(val.Female.replaceAll(/\D/g, '').trim()),
-				isPregnant: false,
-				isLactating: false
+				physicalTypeId: 2,
+				amount: parseFloat(val.Female.replaceAll(/\D/g, '').trim())
 			};
 
 			curr.push(femaleInput);
 
 			if (val.Pregancy && val.Pregancy !== '') {
-				const pregancyInput: VitaminAgeDRIInput = {
+				const pregancyInput: RecommendationInput = {
 					nutrientId,
 					minAge,
 					maxAge: maxAge !== 0 ? maxAge : undefined,
-					sex: 'female',
-					amount: parseFloat(val.Pregancy.replaceAll(/\D/g, '').trim()),
-					isPregnant: true,
-					isLactating: false
+					physicalTypeId: 3,
+					amount: parseFloat(val.Pregancy.replaceAll(/\D/g, '').trim())
 				};
 
 				curr.push(pregancyInput);
 			}
 
 			if (val.Lactation && val.Lactation !== '') {
-				const lactationInput: VitaminAgeDRIInput = {
+				const lactationInput: RecommendationInput = {
 					nutrientId,
 					minAge,
 					maxAge: maxAge !== 0 ? maxAge : undefined,
-					sex: 'female',
+					physicalTypeId: 4,
 					amount: parseFloat(val.Lactation.replaceAll(/\D/g, '').trim()),
-					isPregnant: false,
-					isLactating: true
 				};
 
 				curr.push(lactationInput);
 			}
 
 			return curr;
-		}, [] as VitaminAgeDRIInput[]);
+		}, [] as RecommendationInput[]);
 
 		if (inputs.length === 0) return fail(400, { errors: ['Invalid input.'] });
 
-		const results = await vitaminAgeDRIApi.bulkCreate(inputs);
+		const results = await recommendationController.create(inputs);
 
-		if (results[0].affectedRows > 0) {
-			return { status: 200, message: 'Successfully imported values!', errors: [] };
+		if (results.status === 200) {
+			return { status: results.status, message: 'Successfully imported values!', errors: [] };
 		}
 
 		return fail(500, { errors: ['Failed to insert.'] });

@@ -1,22 +1,39 @@
+import { nutrientController } from '$lib/server/controllers';
+import type { NutrientInput } from '$lib/server/db/schema';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import type { NutrientInput } from '$lib/server/db/schema';
-import { nutrientApi } from '$lib/server/db/nutrient';
 
 export const actions: Actions = {
 	default: async (event) => {
 		try {
 			const formData = await event.request.formData();
 			const name = formData.get('name')?.toString();
+			const fdcNumbersRaw = formData.get('fdcNumbers')?.toString();
+			const unit = formData.get('unit')?.toString();
+
+			let fdcNumbers = '';
+
+			if (fdcNumbersRaw) {
+				fdcNumbersRaw.split(',').forEach((num) => {
+					const valid = parseInt(num, 10);
+					if (isNaN(valid))
+						return fail(400, { message: 'FDC Numbers must be comma-seperated list of numbers.' });
+					fdcNumbers += `${valid},`;
+				});
+			}
+
+			fdcNumbers = fdcNumbers.substring(0, fdcNumbers.length - 1);
 
 			if (name) {
 				const input: NutrientInput = {
-					name
+					name,
+					fdcNumbers,
+					unit
 				};
 
-				const results = await nutrientApi.createNutrient(input);
+				const results = await nutrientController.create(input);
 
-				if (results[0].affectedRows > 0) {
+				if ((results.data?.[0].affectedRows ?? 0) > 0) {
 					return { status: 200, message: 'Nutrient created successfully!', errors: [] };
 				}
 

@@ -9,6 +9,7 @@ declare global {
 			user?: User;
 			session?: Session;
 			profile?: Profile;
+			isMobile: boolean;
 		}
 
 		// interface Error {}

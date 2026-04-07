@@ -6,7 +6,7 @@
 	let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="grid grid-cols-1 gap-4">
+<div class="max-w-xl mx-auto flex flex-col gap-4">
 	<div class="text-xl font-bold">Login</div>
 	<LoginForm />
 	<p class="text-danger-400">{form?.message ?? ''}</p>

@@ -7,44 +7,36 @@ export const validate = (
 	const errors: string[] = [];
 	const newProfile: ProfileInput = {
 		userId,
-		firstName: '',
-		lastName: '',
-		age: 0,
-		sex: '',
+		birthDate: new Date(1900, 0, 1),
+		physicalTypeId: 0,
 		heightInch: 0,
 		heightFeet: 0,
-		weight: ''
+		weight: '',
+		activityLevelId: 0
 	};
 
-	let age: number = 0;
-	let sex: string = '';
+	let birthDate: Date = new Date(1900, 0, 1);
+	let physicalType: number = 0;
 	let heightInch: number = 0;
 	let heightFeet: number = 0;
 	let weight: number = 0;
+	let activityLevel: number = 0;
 
-	const firstName = formData.get('firstName')?.toString();
-	if (!firstName || firstName.trim().length === 0) {
-		errors.push('First name is required');
-	}
-
-	const lastName = formData.get('lastName')?.toString();
-	if (!lastName || lastName.trim().length === 0) {
-		errors.push('Last name is required');
-	}
-
-	const formAge = formData.get('age')?.toString();
-	if (!formAge || formAge.trim().length === 0) {
-		errors.push('Age is required');
+	const formBirthDate = formData.get('birthDate')?.toString();
+	if (!formBirthDate || formBirthDate.trim().length === 0) {
+		errors.push('Birth date is required');
 	} else {
-		age = parseInt(formAge, 10);
-		if (isNaN(age)) {
-			errors.push('Age must be a number');
-		}
+		birthDate = new Date(formBirthDate);
 	}
 
-	const formSex = formData.get('sex')?.toString();
-	if (!formSex || formSex.trim().length === 0) {
-		errors.push('Sex is required');
+	const formPhysicalType = formData.get('physicalType')?.toString();
+	if (!formPhysicalType || formPhysicalType.trim().length === 0) {
+		errors.push('Physical Type is required.');
+	} else {
+		physicalType = parseInt(formPhysicalType, 10);
+		if (isNaN(physicalType)) {
+			errors.push('Physical Type must be a number');
+		}
 	}
 
 	const formHeightInch = formData.get('heightInch')?.toString();
@@ -77,14 +69,23 @@ export const validate = (
 		}
 	}
 
+	const formActivityLevel = formData.get('activityLevel')?.toString();
+	if (!formActivityLevel || formActivityLevel.trim().length === 0) {
+		errors.push('Activity Level is required.');
+	} else {
+		activityLevel = parseInt(formActivityLevel, 10);
+		if (isNaN(activityLevel)) {
+			errors.push('Activity Level must be a number');
+		}
+	}
+
 	if (errors.length === 0) {
-		newProfile.firstName = firstName as string;
-		newProfile.lastName = lastName as string;
-		newProfile.age = age;
-		newProfile.sex = formSex as string;
+		newProfile.birthDate = birthDate;
+		newProfile.physicalTypeId = physicalType;
 		newProfile.heightInch = heightInch;
 		newProfile.heightFeet = heightFeet;
 		newProfile.weight = weight.toFixed(1).toString();
+		newProfile.activityLevelId = activityLevel;
 		newProfile.dateAdded = new Date();
 	}
 

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { mdiPlus } from '@mdi/js';
+	import { enhance } from '$app/forms';
+import { mdiPlus } from '@mdi/js';
 	import { Button, Form, SelectField, Table } from 'svelte-ux';
 
 	let { data, form } = $props();
@@ -9,12 +10,12 @@
 
 <div class="container p-4">
 	<div class="grid gap-4">
-		<Form action="/admin/import?/parse" enctype="multipart/form-data">
+		<form method="post" action="/admin/import?/parse" enctype="multipart/form-data" use:enhance>
 			<div class="grid gap-4">
 				<input type="file" name="importFile" accept=".csv" />
 				<Button class="w-[10%] bg-primary text-white" type="submit">Submit</Button>
 			</div>
-		</Form>
+		</form>
 
 		{#if form?.records}
 			<Table
