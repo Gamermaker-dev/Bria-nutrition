@@ -1,9 +1,17 @@
 export type Dashboard = {
-	nutrients: {
-		id: number;
-		name: string;
-		tdee: number | null;
-		recommended: number;
-		actual: number;
-	}[];
+	userId: string;
+	mealDate: string | Date;
+	calories: number;
+	carbs: number;
+	protein: number;
+	fat: number;
+	sodium: number;
+	cholesterol: number;
+	fiber: number;
+	totalSugars: number;
+	addedSugars: number;
+	vitaminD: number;
+	iron: number;
+	calcium: number;
+	potassium: number;
 };

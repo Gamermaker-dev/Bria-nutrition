@@ -36,7 +36,7 @@
 			{ name: 'id', align: 'left', header: 'ID' },
 			{ name: 'name', align: 'left', header: 'Name' },
 			{ name: 'unit', align: 'left', header: 'Unit' },
-			{ name: 'fdcNumbers', align: 'left', header: 'FDC Number' },
+			{ name: 'fdcNumber', align: 'left', header: 'FDC Number' },
 			{ name: 'dateAdded', align: 'left', header: 'Date Created', format: formatDate }
 		]}
 	/>

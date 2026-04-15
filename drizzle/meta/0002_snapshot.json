@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "f6d57248-f2af-48f4-87da-d9ec3328516d",
-  "prevId": "0a9c7033-547b-44e5-85a2-2056a8f91068",
+  "id": "74085e5f-d5e4-4b8a-8f1c-b9e7d4cffb22",
+  "prevId": "9ac12e29-b9b0-4a10-a2fc-feba65113912",
   "tables": {
     "account": {
       "name": "account",
@@ -639,6 +639,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "fdc_nutrient_id": {
+          "name": "fdc_nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "fdc_number": {
           "name": "fdc_number",
           "type": "int",
@@ -721,6 +728,67 @@
           "name": "food_id",
           "columns": [
             "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "fdc_nutrient": {
+      "name": "fdc_nutrient",
+      "columns": {
+        "fdc_id": {
+          "name": "fdc_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nutrient_id": {
+          "name": "nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "float",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "fdcId_indx": {
+          "name": "fdcId_indx",
+          "columns": [
+            "fdc_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "fdc_nutrient_nutrient_id_nutrient_id_fk": {
+          "name": "fdc_nutrient_nutrient_id_nutrient_id_fk",
+          "tableFrom": "fdc_nutrient",
+          "tableTo": "nutrient",
+          "columnsFrom": [
+            "nutrient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "fdc_nutrient_primary_key": {
+          "name": "fdc_nutrient_primary_key",
+          "columns": [
+            "fdc_id",
+            "nutrient_id"
           ]
         }
       },
@@ -1177,6 +1245,169 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "label": {
+      "name": "label",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date_added": {
+          "name": "date_added",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "label_id": {
+          "name": "label_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "label_name_unique": {
+          "name": "label_name_unique",
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "profile_label": {
+      "name": "profile_label",
+      "columns": {
+        "profile_id": {
+          "name": "profile_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label_id": {
+          "name": "label_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "profileId_indx": {
+          "name": "profileId_indx",
+          "columns": [
+            "profile_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "profile_label_profile_id_profile_id_fk": {
+          "name": "profile_label_profile_id_profile_id_fk",
+          "tableFrom": "profile_label",
+          "tableTo": "profile",
+          "columnsFrom": [
+            "profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "profile_label_label_id_label_id_fk": {
+          "name": "profile_label_label_id_label_id_fk",
+          "tableFrom": "profile_label",
+          "tableTo": "label",
+          "columnsFrom": [
+            "label_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "label_nutrient": {
+      "name": "label_nutrient",
+      "columns": {
+        "label_id": {
+          "name": "label_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nutrient_id": {
+          "name": "nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "labelId_indx": {
+          "name": "labelId_indx",
+          "columns": [
+            "label_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "label_nutrient_label_id_label_id_fk": {
+          "name": "label_nutrient_label_id_label_id_fk",
+          "tableFrom": "label_nutrient",
+          "tableTo": "label",
+          "columnsFrom": [
+            "label_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "label_nutrient_nutrient_id_nutrient_id_fk": {
+          "name": "label_nutrient_nutrient_id_nutrient_id_fk",
+          "tableFrom": "label_nutrient",
+          "tableTo": "nutrient",
+          "columnsFrom": [
+            "nutrient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "physical_type": {
       "name": "physical_type",
       "columns": {
@@ -1220,9 +1451,7 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {
-      "\"nutrient\".\"fdc_numbers\"": "\"nutrient\".\"fdc_number\""
-    }
+    "columns": {}
   },
   "internal": {
     "tables": {},

@@ -1,0 +1,1 @@
+ALTER TABLE `nutrient` ADD `fdc_nutrient_id` bigint unsigned NOT NULL;

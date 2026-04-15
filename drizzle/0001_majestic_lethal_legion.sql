@@ -1,1 +1,0 @@
-ALTER TABLE `activity_level` MODIFY COLUMN `multiplier` decimal(4,3);

@@ -1,4 +1,4 @@
-import { and, between, eq, gte, isNull, or, sql } from 'drizzle-orm';
+import { and, between, eq, gte, inArray, isNull, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import {
 	foodNutrient,
@@ -12,13 +12,17 @@ import {
 	type UserWithProfile,
 	activityLevel,
 	meal,
-	physicalType
+	physicalType,
+	label,
+	labelNutrient
 } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
 import { BaseModelController } from '../db/base';
 import type { MySqlRawQueryResult } from 'drizzle-orm/mysql2';
 import type { Dashboard } from '$lib/types/Dashboard';
 import type { SelectedFields } from 'drizzle-orm/mysql-core';
+import { profileLabel } from '../db/profile_label/schema';
+import { error } from '@sveltejs/kit';
 
 export class UserController extends BaseModelController<typeof profile> {
 	private fullProfileSelect: SelectedFields;
@@ -69,14 +73,14 @@ export class UserController extends BaseModelController<typeof profile> {
 		}
 	};
 
-	public getById = async (id: string): Response<Profile> => {
+	public getById = async (id: string): Response<UserWithProfile> => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ById`);
 			const data = this.returnOneRecord(
 				await db
 					.select(this.fullProfileSelect)
 					.from(this.TABLE)
-                    .innerJoin(user, eq(this.TABLE.userId, user.id))
+					.innerJoin(user, eq(this.TABLE.userId, user.id))
 					.innerJoin(physicalType, eq(this.TABLE.physicalTypeId, physicalType.id))
 					.innerJoin(activityLevel, eq(this.TABLE.activityLevelId, activityLevel.id))
 					.where(eq(this.TABLE.userId, id))
@@ -92,45 +96,52 @@ export class UserController extends BaseModelController<typeof profile> {
 			this.setOperation('getDashboard');
 			const TODAY = new Date();
 
-			const actualSubquery = db
+			const sub = db
 				.select({
-					nutrientId: nutrient.id,
-					actualAmount: sql<number>`sum(${foodNutrient.amount})`.as('actualAmount')
+					userId: meal.userId,
+					mealDate: meal.mealDate,
+					nutrientLabel: sql`${label.name}`.as('nutrientLabel'),
+					fdcNumber: nutrient.fdcNumber,
+					amountPerServing: sql<number>`${foodNutrient.amount}`.as('amountPerServing'),
+					amountPerMeal: sql<number>`${mealFood.amount}`.as('amountPerMeal'),
+					unit: nutrient.unit
 				})
-				.from(nutrient)
-				.innerJoin(foodNutrient, eq(nutrient.id, foodNutrient.nutrientId))
-				.innerJoin(mealFood, eq(foodNutrient.foodId, mealFood.foodId))
-				.innerJoin(meal, eq(mealFood.mealId, meal.id))
-				.where(and(eq(meal.userId, userId), eq(meal.mealDate, new Date(TODAY.toDateString()))))
-				.groupBy(nutrient.id)
-				.as('nutrientAmount');
+				.from(meal)
+				.innerJoin(mealFood, eq(meal.id, mealFood.mealId))
+				.innerJoin(foodNutrient, eq(mealFood.foodId, foodNutrient.foodId))
+				.innerJoin(labelNutrient, eq(foodNutrient.nutrientId, labelNutrient.nutrientId))
+				.innerJoin(label, eq(labelNutrient.labelId, label.id))
+				.innerJoin(nutrient, eq(foodNutrient.nutrientId, nutrient.id))
+				.where(and(eq(meal.userId, userId), eq(meal.mealDate, new Date(2026, 3, 10))))
+				.as('userFoodList');
+
+			const labelSum = (label: string, alias: string) =>
+				sql<number>`SUM(IF(${eq(sub.nutrientLabel, label)}, ${sub.amountPerServing} * ${sub.amountPerMeal} / IF(${eq(sub.unit, 'MG')}, 1000, 1), 0))`.as(alias);
 
 			const data = await db
 				.select({
-					id: nutrient.id,
-					name: nutrient.name,
-					tdee: sql<number>`ROUND(((10 * (${this.TABLE.weight} / 2.205)) + (6.25 * ((${this.TABLE.heightFeet}*12)+${this.TABLE.heightInch}) * 2.54) - (5 * ${this.TABLE.heightFeet}) + 5) * ${activityLevel.multiplier})`.as(
-						'tdee'
-					),
-					recommended: sql<number>`NVL(${recommendation.amount}, 0) as recommended`,
-					actual: sql<number>`NVL(${actualSubquery.actualAmount}, 0) as actual`
+					userId: sub.userId,
+					mealDate: sub.mealDate,
+					calories: labelSum('Calories', 'calories'),
+					carbs: labelSum('Carbs', 'carbs'),
+					protein: labelSum('Protein', 'protein'),
+					fat: labelSum('Fat', 'fat'),
+					cholesterol: labelSum('Cholesterol', 'cholesterol'),
+					sodium: labelSum('Sodium', 'sodium'),
+					fiber: labelSum('Fiber', 'fiber'),
+					totalSugars: labelSum('Total Sugars', 'totalSugars'),
+					addedSugars: labelSum('Added Sugars', 'addedSugars'),
+					vitaminD: labelSum('Vitamin D', 'vitaminD'),
+					iron: labelSum('Iron', 'iron'),
+					calcium: labelSum('Calcium', 'calcium'),
+					potassium: labelSum('Potassium', 'potassium')
 				})
-				.from(nutrient)
-				.innerJoin(this.TABLE, eq(this.TABLE.userId, userId))
-				.innerJoin(activityLevel, eq(this.TABLE.activityLevelId, activityLevel.id))
-				.leftJoin(recommendation, eq(nutrient.id, recommendation.nutrientId))
-				.leftJoin(actualSubquery, eq(nutrient.id, actualSubquery.nutrientId))
-				.where(
-					and(
-						eq(this.TABLE.physicalTypeId, recommendation.physicalTypeId),
-						or(
-							between(this.TABLE.age, recommendation.minAge, recommendation.maxAge),
-							and(gte(this.TABLE.age, recommendation.minAge), isNull(recommendation.maxAge))
-						)
-					)
-				);
+				.from(sub)
+				.groupBy(sub.userId, sub.mealDate);
 
-			return this.success({ nutrients: data });
+			if (data.length !== 1) throw error(500, 'Error encountered fetching Dashboard!');
+
+			return this.success(data[0]);
 		} catch (err) {
 			return this.error(err);
 		}

@@ -8,12 +8,14 @@
 
 <Container>
 	<span class="text-xl font-bold">Dashboard</span>
-	{#if data.dashboard && data.dashboard.nutrients.length > 0}
+	{#if data.dashboard}
 		<div class="grid grid-cols-3 gap-4">
-			{#each data.dashboard.nutrients as nutrient (nutrient.id)}
-				<ProgressCircle value={(nutrient.actual / nutrient.recommended) * 100} track size={100}>
-					{nutrient.name}
-				</ProgressCircle>
+			{#each Object.entries(data.dashboard) as item (item[0])}
+				{#if item[0] !== 'userId' && item[0] !== 'mealDate'}
+					<ProgressCircle value={item[1] as number} track size={100}>
+						{item[0].toUpperCase()}
+					</ProgressCircle>
+				{/if}
 			{/each}
 		</div>
 	{:else}

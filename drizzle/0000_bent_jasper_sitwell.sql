@@ -54,7 +54,7 @@ CREATE OR REPLACE TABLE `activity_level` (
 	`id` serial,
 	`name` text NOT NULL,
 	`description` text NOT NULL,
-	`multiplier` decimal(3,2),
+	`multiplier` decimal(4,3),
 	`date_added` datetime NOT NULL,
 	CONSTRAINT `activity_level_id` PRIMARY KEY(`id`),
 	CONSTRAINT `activity_level_name_unique` UNIQUE(`name`)
@@ -81,7 +81,7 @@ CREATE OR REPLACE TABLE `nutrient` (
 	`id` serial,
 	`name` text NOT NULL,
 	`unit` text NOT NULL,
-	`fdc_numbers` text NOT NULL,
+	`fdc_number` int NOT NULL,
 	`date_added` datetime NOT NULL,
 	CONSTRAINT `nutrient_id` PRIMARY KEY(`id`)
 );
@@ -144,6 +144,24 @@ CREATE OR REPLACE TABLE `recommendation` (
 	CONSTRAINT `recommendation_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE OR REPLACE TABLE `label` (
+	`id` serial,
+	`name` text NOT NULL,
+	`date_added` datetime NOT NULL,
+	CONSTRAINT `label_id` PRIMARY KEY(`id`),
+	CONSTRAINT `label_name_unique` UNIQUE(`name`)
+);
+--> statement-breakpoint
+CREATE OR REPLACE TABLE `profile_label` (
+	`profile_id` bigint unsigned NOT NULL,
+	`label_id` bigint unsigned NOT NULL
+);
+--> statement-breakpoint
+CREATE OR REPLACE TABLE `label_nutrient` (
+	`label_id` bigint unsigned NOT NULL,
+	`nutrient_id` bigint unsigned NOT NULL
+);
+--> statement-breakpoint
 CREATE OR REPLACE TABLE `physical_type` (
 	`id` serial,
 	`name` text NOT NULL,
@@ -166,6 +184,10 @@ ALTER TABLE `user_role` ADD CONSTRAINT `user_role_userId_user_id_fk` FOREIGN KEY
 ALTER TABLE `user_role` ADD CONSTRAINT `user_role_role_id_role_int_fk` FOREIGN KEY (`role_id`) REFERENCES `role`(`int`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `recommendation` ADD CONSTRAINT `recommendation_nutrient_id_nutrient_id_fk` FOREIGN KEY (`nutrient_id`) REFERENCES `nutrient`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `recommendation` ADD CONSTRAINT `recommendation_physical_type_id_physical_type_id_fk` FOREIGN KEY (`physical_type_id`) REFERENCES `physical_type`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `profile_label` ADD CONSTRAINT `profile_label_profile_id_profile_id_fk` FOREIGN KEY (`profile_id`) REFERENCES `profile`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `profile_label` ADD CONSTRAINT `profile_label_label_id_label_id_fk` FOREIGN KEY (`label_id`) REFERENCES `label`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `label_nutrient` ADD CONSTRAINT `label_nutrient_label_id_label_id_fk` FOREIGN KEY (`label_id`) REFERENCES `label`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `label_nutrient` ADD CONSTRAINT `label_nutrient_nutrient_id_nutrient_id_fk` FOREIGN KEY (`nutrient_id`) REFERENCES `nutrient`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE OR REPLACE INDEX `account_userId_idx` ON `account` (`user_id`);--> statement-breakpoint
 CREATE OR REPLACE INDEX `session_userId_idx` ON `session` (`user_id`);--> statement-breakpoint
 CREATE OR REPLACE INDEX `verification_identifier_idx` ON `verification` (`identifier`);--> statement-breakpoint
@@ -176,4 +198,6 @@ CREATE OR REPLACE INDEX `mealId_indx` ON `meal_food` (`meal_id`);--> statement-b
 CREATE OR REPLACE INDEX `user_role_usrId_indx` ON `user_role` (`userId`);--> statement-breakpoint
 CREATE OR REPLACE INDEX `user_role_roleId_indx` ON `user_role` (`role_id`);--> statement-breakpoint
 CREATE OR REPLACE INDEX `nutrientId_indx` ON `recommendation` (`nutrient_id`);--> statement-breakpoint
-CREATE OR REPLACE INDEX `physicalTypeId_indx` ON `recommendation` (`physical_type_id`);
+CREATE OR REPLACE INDEX `physicalTypeId_indx` ON `recommendation` (`physical_type_id`);--> statement-breakpoint
+CREATE OR REPLACE INDEX `profileId_indx` ON `profile_label` (`profile_id`);--> statement-breakpoint
+CREATE OR REPLACE INDEX `labelId_indx` ON `label_nutrient` (`label_id`);

@@ -18,3 +18,18 @@ export const foodNutrient = mysqlTable(
 		index('foodId_indx').on(table.foodId)
 	]
 );
+
+export const fdcNutrient = mysqlTable(
+	'fdc_nutrient',
+	{
+		fdcId: bigint('fdc_id', { mode: 'number', unsigned: true }),
+		nutrientId: bigint('nutrient_id', { mode: 'number', unsigned: true }),
+		amount: float('amount')
+			.notNull()
+			.$default(() => 0)
+	},
+	(table) => [
+		primaryKey({ name: 'fdc_nutrient_primary_key', columns: [table.fdcId, table.nutrientId] }),
+		index('fdcId_indx').on(table.fdcId)
+	]
+);

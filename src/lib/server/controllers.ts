@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { config } from 'dotenv';
 import { ActivityLevelController } from './controllers/ActivityLevelController';
 import { FoodController } from './controllers/FoodController';
 import { MealController } from './controllers/MealController';
@@ -18,6 +18,7 @@ import {
 	role
 } from './db/schema';
 import { UsdaAPIController } from './usda';
+config({ path: '.env' })
 
 // define controllers
 const activityLevelController: ActivityLevelController = new ActivityLevelController(
@@ -37,7 +38,7 @@ const physicalTypeController: PhysicalTypeController = new PhysicalTypeControlle
 	'PhysicalType',
 	physicalType
 );
-const usdaApi = new UsdaAPIController(env.usda_api_key);
+const usdaApi = new UsdaAPIController(process.env.usda_api_key ?? '');
 
 export {
 	activityLevelController,

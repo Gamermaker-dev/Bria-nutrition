@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9ac12e29-b9b0-4a10-a2fc-feba65113912",
-  "prevId": "4e6c6695-306c-4b06-b0c8-5369b772b456",
+  "id": "e895d5e3-3d56-45e3-b7cb-21ce74b6e453",
+  "prevId": "b5fae5fb-c639-4878-bbe4-be14186277b5",
   "tables": {
     "account": {
       "name": "account",
@@ -639,6 +639,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "fdc_nutrient_id": {
+          "name": "fdc_nutrient_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "fdc_number": {
           "name": "fdc_number",
           "type": "int",
@@ -761,21 +768,7 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "fdc_nutrient_nutrient_id_nutrient_id_fk": {
-          "name": "fdc_nutrient_nutrient_id_nutrient_id_fk",
-          "tableFrom": "fdc_nutrient",
-          "tableTo": "nutrient",
-          "columnsFrom": [
-            "nutrient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {
         "fdc_nutrient_primary_key": {
           "name": "fdc_nutrient_primary_key",
@@ -1147,8 +1140,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "nutrient_id": {
-          "name": "nutrient_id",
+        "label_id": {
+          "name": "label_id",
           "type": "bigint unsigned",
           "primaryKey": false,
           "notNull": true,
@@ -1184,10 +1177,10 @@
         }
       },
       "indexes": {
-        "nutrientId_indx": {
-          "name": "nutrientId_indx",
+        "labelId_indx": {
+          "name": "labelId_indx",
           "columns": [
-            "nutrient_id"
+            "label_id"
           ],
           "isUnique": false
         },
@@ -1200,12 +1193,12 @@
         }
       },
       "foreignKeys": {
-        "recommendation_nutrient_id_nutrient_id_fk": {
-          "name": "recommendation_nutrient_id_nutrient_id_fk",
+        "recommendation_label_id_label_id_fk": {
+          "name": "recommendation_label_id_label_id_fk",
           "tableFrom": "recommendation",
-          "tableTo": "nutrient",
+          "tableTo": "label",
           "columnsFrom": [
-            "nutrient_id"
+            "label_id"
           ],
           "columnsTo": [
             "id"
@@ -1444,7 +1437,9 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"recommendation\".\"nutrient_id\"": "\"recommendation\".\"label_id\""
+    }
   },
   "internal": {
     "tables": {},

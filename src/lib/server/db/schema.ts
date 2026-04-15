@@ -9,4 +9,7 @@ export * from './meal_food/schema';
 export * from './role/schema';
 export * from './user_role/schema';
 export * from './recommendation/schema';
+export * from './label/schema';
+export * from './profile_label/schema';
+export * from './label_nutrient/schema';
 export * from './physical_type/schema';
