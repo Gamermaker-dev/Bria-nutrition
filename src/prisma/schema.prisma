@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model account {
+  id                       String    @id @db.VarChar(36)
+  account_id               String    @db.NVarChar(450)
+  provider_id              String    @db.NVarChar(450)
+  user_id                  String    @db.VarChar(36)
+  access_token             String?   @db.NVarChar(450)
+  refresh_token            String?   @db.NVarChar(450)
+  id_token                 String?   @db.NVarChar(450)
+  access_token_expires_at  DateTime? @db.DateTime2
+  refresh_token_expires_at DateTime? @db.DateTime2
+  scope                    String?   @db.NVarChar(450)
+  password                 String?   @db.NVarChar(450)
+  created_at               DateTime  @default(now()) @db.DateTime2
+  updated_at               DateTime  @db.DateTime2
+  user                     user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_user_id_user_id_fk")
+
+  @@index([user_id], map: "account_userId_idx")
+}
+
+model activity_level {
+  id          BigInt    @id @unique(map: "activity_level_id_unique") @default(autoincrement()) @db.BigInt
+  name        String    @unique(map: "activity_level_name_unique") @db.NVarChar(450)
+  description String    @db.NVarChar(450)
+  multiplier  Decimal?  @db.Decimal(4, 3)
+  date_added  DateTime  @db.DateTime2
+  profile     profile[]
+}
+
+model fdc_nutrient {
+  fdc_id      BigInt @db.BigInt
+  nutrient_id BigInt @db.BigInt
+  amount      Float  @db.Float
+
+  @@id([fdc_id, nutrient_id])
+  @@index([fdc_id], map: "fdcId_indx")
+  @@index([nutrient_id], map: "fdc_nutrient_nutrient_id_nutrient_id_fk")
+}
+
+model food {
+  id            BigInt          @id @unique(map: "food_id_unique") @default(autoincrement()) @db.BigInt
+  name          String          @db.NVarChar(450)
+  fdcId         Int?
+  user_id       String?         @db.VarChar(36)
+  date_added    DateTime        @db.DateTime2
+  food_nutrient food_nutrient[]
+  meal_food     meal_food[]
+
+  @@index([user_id], map: "userId_indx")
+}
+
+model food_nutrient {
+  food_id     BigInt   @db.BigInt
+  nutrient_id BigInt   @db.BigInt
+  amount      Float    @db.Float
+  food        food     @relation(fields: [food_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "food_nutrient_food_id_food_id_fk")
+  nutrient    nutrient @relation(fields: [nutrient_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "food_nutrient_nutrient_id_nutrient_id_fk")
+
+  @@id([food_id, nutrient_id])
+  @@index([food_id], map: "foodId_indx")
+  @@index([nutrient_id], map: "food_nutrient_nutrient_id_nutrient_id_fk")
+}
+
+model label {
+  id             BigInt           @id @unique(map: "label_id_unique") @default(autoincrement()) @db.BigInt
+  name           String           @unique(map: "label_name_unique") @db.NVarChar(450)
+  date_added     DateTime         @db.DateTime2
+  label_nutrient label_nutrient[] @ignore
+  profile_label  profile_label[]  @ignore
+  recommendation recommendation[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model label_nutrient {
+  label_id    BigInt   @db.BigInt
+  nutrient_id BigInt   @db.BigInt
+  label       label    @relation(fields: [label_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "label_nutrient_label_id_label_id_fk")
+  nutrient    nutrient @relation(fields: [nutrient_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "label_nutrient_nutrient_id_nutrient_id_fk")
+
+  @@index([label_id], map: "labelId_indx")
+  @@index([nutrient_id], map: "label_nutrient_nutrient_id_nutrient_id_fk")
+  @@ignore
+}
+
+model meal {
+  id           BigInt      @id @unique(map: "meal_id_unique") @default(autoincrement()) @db.BigInt
+  meal_date    DateTime    @db.Date
+  user_id      String      @db.VarChar(36)
+  date_added   DateTime    @db.DateTime2
+  date_updated DateTime?   @db.DateTime2
+  date_deleted DateTime?   @db.DateTime2
+  user         user        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "meal_user_id_user_id_fk")
+  meal_food    meal_food[]
+
+  @@unique([meal_date, user_id], map: "userMeal_indx")
+  @@index([user_id], map: "meal_user_id_user_id_fk")
+}
+
+model meal_food {
+  meal_id BigInt @db.BigInt
+  food_id BigInt @db.BigInt
+  amount  Float  @db.Float
+  food    food   @relation(fields: [food_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "meal_food_food_id_food_id_fk")
+  meal    meal   @relation(fields: [meal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "meal_food_meal_id_meal_id_fk")
+
+  @@id([meal_id, food_id])
+  @@index([meal_id], map: "mealId_indx")
+  @@index([food_id], map: "meal_food_food_id_food_id_fk")
+}
+
+model nutrient {
+  id              BigInt           @id @unique(map: "nutrient_ud_unique") @default(autoincrement()) @db.BigInt
+  name            String           @db.NVarChar(450)
+  unit            String           @db.NVarChar(450)
+  fdc_number      Int
+  date_added      DateTime         @db.DateTime2
+  fdc_nutrient_id BigInt           @db.BigInt
+  food_nutrient   food_nutrient[]
+  label_nutrient  label_nutrient[] @ignore
+}
+
+model physical_type {
+  id             BigInt           @id @unique(map: "physical_type_unique_id") @default(autoincrement()) @db.BigInt
+  name           String           @db.NVarChar(450)
+  date_added     DateTime         @db.DateTime2
+  profile        profile[]
+  recommendation recommendation[]
+}
+
+model profile {
+  id               BigInt          @id @unique(map: "profile_unique_id") @default(autoincrement()) @db.BigInt
+  user_id          String          @db.VarChar(36)
+  birth_date       DateTime        @db.DateTime2
+  physical_type_id BigInt          @db.BigInt
+  height_inch      Int
+  height_feet      Int
+  weight           Decimal         @db.Decimal(4, 1)
+  activityLevelId  BigInt          @db.BigInt
+  age              Int?
+  next_profile_id  BigInt?         @db.BigInt
+  date_added       DateTime        @db.DateTime2
+  date_updated     DateTime?       @db.DateTime2
+  date_deleted     DateTime?       @db.DateTime2
+  profile          profile?        @relation("profileToprofile", fields: [next_profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "next_profile_foreignKey")
+  other_profile    profile[]       @relation("profileToprofile")
+  activity_level   activity_level  @relation(fields: [activityLevelId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "profile_activityLevelId_activity_level_id_fk")
+  physical_type    physical_type   @relation(fields: [physical_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "profile_physical_type_id_physical_type_id_fk")
+  user             user            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "profile_user_id_user_id_fk")
+  profile_label    profile_label[] @ignore
+
+  @@index([next_profile_id], map: "next_profile_foreignKey")
+  @@index([activityLevelId], map: "profile_activityLevelId_activity_level_id_fk")
+  @@index([physical_type_id], map: "profile_physical_type_id_physical_type_id_fk")
+  @@index([user_id], map: "userId_indx")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model profile_label {
+  profile_id BigInt  @db.BigInt
+  label_id   BigInt  @db.BigInt
+  label      label   @relation(fields: [label_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "profile_label_label_id_label_id_fk")
+  profile    profile @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "profile_label_profile_id_profile_id_fk")
+
+  @@index([profile_id], map: "profileId_indx")
+  @@index([label_id], map: "profile_label_label_id_label_id_fk")
+  @@ignore
+}
+
+model recommendation {
+  id               BigInt        @id @unique(map: "recommendation_unique_id") @default(autoincrement()) @db.BigInt
+  label_id         BigInt        @db.BigInt
+  min_age          Int
+  max_age          Int?
+  physical_type_id BigInt        @db.BigInt
+  amount           Float         @db.Float
+  label            label         @relation(fields: [label_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "recommendation_label_id_label_id_fk")
+  physical_type    physical_type @relation(fields: [physical_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "recommendation_physical_type_id_physical_type_id_fk")
+
+  @@index([label_id], map: "labelId_indx")
+  @@index([physical_type_id], map: "physicalTypeId_indx")
+}
+
+model role {
+  id        BigInt      @id @unique(map: "role_id_unique") @default(autoincrement()) @db.BigInt
+  name       String      @db.NVarChar(450)
+  date_added DateTime    @db.DateTime2
+  user_role  user_role[]
+}
+
+model session {
+  id         String   @id @db.VarChar(36)
+  expires_at DateTime @db.DateTime2
+  token      String   @unique(map: "session_token_unique") @db.VarChar(255)
+  created_at DateTime @default(now()) @db.DateTime2
+  updated_at DateTime @db.DateTime2
+  ip_address String?  @db.NVarChar(450)
+  user_agent String?  @db.NVarChar(450)
+  user_id    String   @db.VarChar(36)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_user_id_user_id_fk")
+
+  @@index([user_id], map: "session_userId_idx")
+}
+
+model user {
+  id             String      @id @db.VarChar(36)
+  name           String      @db.VarChar(255)
+  email          String      @unique(map: "user_email_unique") @db.VarChar(255)
+  email_verified Boolean     @default(false)
+  image          String?     @db.NVarChar(450)
+  created_at     DateTime    @default(now()) @db.DateTime2
+  updated_at     DateTime    @default(now()) @db.DateTime2
+  account        account[]
+  meal           meal[]
+  profile        profile[]
+  session        session[]
+  user_role      user_role[]
+}
+
+model user_role {
+  userId     String   @db.VarChar(36)
+  role_id    BigInt   @db.BigInt
+  date_added DateTime @db.DateTime2
+  role       role     @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_role_role_id_role_id_fk")
+  user       user     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_role_userId_user_id_fk")
+
+  @@id([userId, role_id])
+  @@index([role_id], map: "user_role_roleId_indx")
+  @@index([userId], map: "user_role_usrId_indx")
+}
+
+model verification {
+  id         String   @id @db.VarChar(36)
+  identifier String   @db.VarChar(255)
+  value      String   @db.NVarChar(450)
+  expires_at DateTime @db.DateTime2
+  created_at DateTime @default(now()) @db.DateTime2
+  updated_at DateTime @default(now()) @db.DateTime2
+
+  @@index([identifier])
+}

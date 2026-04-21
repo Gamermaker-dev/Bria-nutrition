@@ -44,11 +44,11 @@ export class BaseModelController<T extends AnyMySqlTable> {
 
 	protected success = <T>(data: T) => {
 		this.logComplete();
-		return { status: 200, data };
+		return { status: 200, data, message: '' };
 	};
 
 	protected error = (err: unknown) => {
 		this.logError(`${err}`);
-		return { status: 500, message: `${err}` };
+		return { status: 500, data: undefined, message: `${err}` };
 	};
 }

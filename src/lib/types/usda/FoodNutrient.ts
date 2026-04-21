@@ -1,5 +1,5 @@
 export type FoodNutrient = {
-    number: number;
+    number: string;
     name: string;
     amount: number;
     unitName: string;

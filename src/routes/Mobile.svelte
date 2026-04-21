@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import BriaPage from '$lib/components/BriaPage.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 	import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 	import type { Snippet } from 'svelte';
 	import { Button, Menu, Toggle } from 'svelte-ux';
@@ -10,16 +11,26 @@
 	let {
 		user,
 		navbar,
+		isLoading = false,
 		children
-	}: { user: unknown; navbar: NavbarItemProps[]; children: Snippet<[]> } = $props();
+	}: {
+		user: unknown;
+		navbar: NavbarItemProps[];
+		isLoading: boolean;
+		children: Snippet<[]>;
+	} = $props();
 </script>
 
 <header class="bg-primary-400 text-white p-4">BRIA</header>
 
-<main class="grow h-screen">
+<main class="grow h-screen relative">
 	<BriaPage>
 		{#snippet body()}
-			{@render children()}
+			{#if isLoading}
+				<Loading />
+			{:else}
+				{@render children()}
+			{/if}
 		{/snippet}
 	</BriaPage>
 </main>

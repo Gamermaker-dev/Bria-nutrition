@@ -26,7 +26,7 @@ const activityLevelController: ActivityLevelController = new ActivityLevelContro
 	activityLevel
 );
 const nutrientController: NutrientController = new NutrientController('Nutrient', nutrient);
-const ingredientController: FoodController = new FoodController('Ingredient', food);
+const foodController: FoodController = new FoodController('Food', food);
 const mealController: MealController = new MealController('Meal', meal);
 const userController: UserController = new UserController('Profile', profile);
 const recommendationController: RecommendationsController = new RecommendationsController(
@@ -42,7 +42,7 @@ const usdaApi = new UsdaAPIController(process.env.usda_api_key ?? '');
 
 export {
 	activityLevelController,
-	ingredientController,
+	foodController,
 	mealController,
 	nutrientController,
 	physicalTypeController,

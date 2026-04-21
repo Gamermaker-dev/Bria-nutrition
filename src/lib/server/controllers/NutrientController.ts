@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { nutrient, type Nutrient, type NutrientInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
@@ -34,6 +34,18 @@ export class NutrientController extends BaseModelController<typeof nutrient> {
 		}
 	};
 
+	public getByFdcIds = async (fdcIds: number[]): Response<Nutrient[]> => {
+		try {
+			this.setOperation(`get${this.TABLE_NAME}ByFdcIds`);
+
+			const data = await db.select().from(this.TABLE).where(inArray(this.TABLE.fdcNumber, fdcIds));
+
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
+
 	public getDropdown = async (): Response<{ label: string; value: number }[]> => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}Dropdown`);
@@ -59,7 +71,7 @@ export class NutrientController extends BaseModelController<typeof nutrient> {
 		}
 	};
 
-    public import = async (input: NutrientInput[]): Response<MySqlRawQueryResult> => {
+	public import = async (input: NutrientInput[]): Response<MySqlRawQueryResult> => {
 		try {
 			this.setOperation(`create${this.TABLE_NAME}`);
 			const data = await db.insert(this.TABLE).values(input);

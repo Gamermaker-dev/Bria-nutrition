@@ -8,20 +8,19 @@ export const load: LayoutServerLoad = async (event) => {
 			return redirect(302, '/login');
 		}
 
-		if (event.locals.user && !event.locals.profile && event.route.id !== '/createProfile') {
-			return redirect(302, '/createProfile');
+		if (event.locals.user && !event.locals.profile && event.route.id !== '/profile/create') {
+			return redirect(302, '/profile/create');
 		}
 
 		const navbar: NavbarItemProps[] = event.locals.user
 			? [
 					{ text: 'Home', href: '/' },
 					{ text: 'Food', href: '/food' },
-					{ text: 'Meals', href: '/' },
+					{ text: 'Report', href: '/health' },
 					{
 						text: 'Settings',
 						subItems: [
-							{ text: 'Admin', href: '/admin' },
-							{ text: 'Profile', href: '/' },
+							{ text: 'Profile', href: '/profile' },
 							{ text: 'Signout', action: '/login?/signOut' }
 						]
 					}
@@ -31,7 +30,7 @@ export const load: LayoutServerLoad = async (event) => {
 		return { user: event.locals.user, navbar, url: event.url, isMobile: event.locals.isMobile };
 	} catch (err) {
 		if (isRedirect(err)) throw err;
-		
+
 		throw error(500, { message: `${err}` });
 	}
 };

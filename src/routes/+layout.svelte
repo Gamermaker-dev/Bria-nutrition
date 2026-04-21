@@ -6,6 +6,7 @@
 	import { getSettings } from 'svelte-ux';
 	import Web from './Web.svelte';
 	import Mobile from './Mobile.svelte';
+	import { beforeNavigate } from '$app/navigation';
 
 	let { data, children }: { data: LayoutServerData; children: Snippet<[]> } = $props();
 
@@ -13,6 +14,14 @@
 
 	$effect(() => {
 		$showDrawer = data.user != undefined;
+	});
+
+	let isLoading = $state(false);
+
+	beforeNavigate((nav) => {
+		isLoading = true;
+		console.log(`Navigating from ${nav.from?.url.href} to ${nav.to?.url.href}`);
+		nav.complete.finally(() => (isLoading = false));
 	});
 </script>
 
@@ -22,11 +31,11 @@
 
 <div class="flex flex-col min-h-screen">
 	{#if data.isMobile}
-		<Mobile user={data.user} navbar={data.navbar}>
+		<Mobile user={data.user} navbar={data.navbar} {isLoading}>
 			{@render children()}
 		</Mobile>
 	{:else}
-		<Web user={data.user} navbar={data.navbar}>
+		<Web user={data.user} navbar={data.navbar} {isLoading}>
 			{@render children()}
 		</Web>
 	{/if}

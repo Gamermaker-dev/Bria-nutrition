@@ -30,13 +30,8 @@ export const handleError: HandleServerError = (event) => {
 	if (isRedirect(event.error)) {
 		// do nothing
 	} else {
-		let err = event.error;
-		let errorMessage: string = '';
-		if (typeof err === 'string') errorMessage = err;
-		console.log(Object.keys(err));
-		console.error(errorMessage);
-		console.log(
-			`An error occurred for ${event.event.route.id} and user ${event.event.locals.user ?? 0}. The error is as folows: ${event.status}: ${event.message}`
+		console.error(
+			`An error occurred for ${event.event.route.id} and user ${event.event.locals.user ?? 0}. The error is as folows:`, event.error
 		);
 	}
 };

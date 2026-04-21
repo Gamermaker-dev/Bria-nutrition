@@ -1,7 +1,7 @@
 import type { FoodListItem } from './FoodListItem';
 
 export type FoodPaginatedSearch = {
-	aggregations: {
+	aggregations?: {
 		dataType: {
 			Branded?: number;
 			'SR Legacy'?: number;

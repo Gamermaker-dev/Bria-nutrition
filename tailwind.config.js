@@ -4,7 +4,11 @@ const colors = require('tailwindcss/colors');
 const layerstack = require('@layerstack/tailwind/plugin');
 
 module.exports = {
-	content: ['./src/**/*.{html,svelte}', './node_modules/svelte-ux/**/*.{svelte,js}'],
+	content: [
+		'./src/**/*.{html,svelte}',
+		'./node_modules/svelte-ux/**/*.{svelte,js}',
+		'./node_modules/layerchart/**/*.{svelte,js}'
+	],
 
 	// See customization docs: https://svelte-ux.techniq.dev/customization
 	ux: {

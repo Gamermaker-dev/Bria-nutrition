@@ -1,7 +1,7 @@
 import { type InferSelectModel } from 'drizzle-orm';
 import { datetime, index, int, serial, text, varchar } from 'drizzle-orm/mysql-core';
 import { mysqlTable } from 'drizzle-orm/mysql-core/table';
-import type { Nutrient } from '../schema';
+import type { Nutrient, NutrientWithAmount } from '../schema';
 
 export const food = mysqlTable(
 	'food',
@@ -18,7 +18,9 @@ export const food = mysqlTable(
 );
 
 export type Food = InferSelectModel<typeof food>;
-export type FoodWithNutrients = Food & { nutrients: Nutrient[] };
+export interface FoodWithNutrients extends Food {
+	nutrients: Nutrient[];
+}
 export type FoodInput = {
 	id?: number;
 	name: string;
@@ -28,3 +30,6 @@ export type FoodInput = {
 	mealDate: string;
 	userId: string;
 };
+export interface CustomFood extends Food {
+	nutrients: NutrientWithAmount[];
+}

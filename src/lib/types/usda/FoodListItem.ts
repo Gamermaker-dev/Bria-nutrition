@@ -5,7 +5,7 @@ export type FoodListItem = {
     description: string;
     dataType: string;
     publicationDate: Date;
-    ndbNumber: string;
+    ndbNumber?: string;
     foodNutrients: FoodNutrient[];
     scientificName?: string;
     brandOwner?: string;

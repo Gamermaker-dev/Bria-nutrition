@@ -2,6 +2,7 @@ import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { auth } from '$lib/server/auth';
+import { createActionError } from '$lib/util';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -31,7 +32,9 @@ export const actions: Actions = {
 			}
 			return fail(400, { message: 'Social sign-in failed' });
 		} catch (err) {
-			throw error(500, { message: `${err}` });
+			if (isRedirect(err)) throw err;
+			console.error('Unexpected error occurred while logging in:', err);
+			throw fail(500, createActionError({ login: ['Please try again later.'] }));
 		}
 	},
 	signInSocial: async (event) => {
@@ -53,7 +56,10 @@ export const actions: Actions = {
 			return fail(400, { message: 'Social sign-in failed' });
 		} catch (err) {
 			if (isRedirect(err)) throw err;
-			else throw error(500, { message: `${err}` });
+			else {
+				console.error('Unexpected error occurred while signing in through social:', err);
+				throw fail(500, createActionError({ login: ['Please try again later.'] }));
+			}
 		}
 	},
 	signOut: async (event) => {
@@ -64,7 +70,8 @@ export const actions: Actions = {
 			return redirect(302, '/login');
 		} catch (err) {
 			if (isRedirect(err)) throw err;
-			throw error(500, { message: `${err}` });
+			console.error('Unexpected error occurred signing out:', err);
+			throw fail(500, createActionError({ logout: ['Whoops! Failed to sign-out!'] }));
 		}
 	}
 };

@@ -15,3 +15,6 @@ export const nutrient = mysqlTable('nutrient', {
 
 export type Nutrient = InferSelectModel<typeof nutrient>;
 export type NutrientInput = InferInsertModel<typeof nutrient>;
+export interface NutrientWithAmount extends Nutrient {
+	amount: number;
+}

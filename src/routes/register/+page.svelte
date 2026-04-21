@@ -3,11 +3,13 @@
 	import { Button, TextField } from 'svelte-ux';
 
 	import type { ActionData } from './$types';
+	import PostForm from '$lib/components/PostForm.svelte';
 
 	let { form }: { form: ActionData } = $props();
 </script>
 
 <div class="container p-4">
+	<PostForm {form} />
 	<span class="text-xl font-bold">Register</span>
 	<form method="post" action="?/signUp" use:enhance>
 		<div class="grid gap-4">
@@ -17,5 +19,4 @@
 			<Button class="bg-primary-400 text-white place-self-start" type="submit">Sign up</Button>
 		</div>
 	</form>
-	<p style="color: red">{form?.message ?? ''}</p>
 </div>
