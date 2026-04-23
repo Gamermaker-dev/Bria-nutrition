@@ -1,14 +1,14 @@
 import { betterAuth } from 'better-auth/minimal';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { env } from '$env/dynamic/private';
 import { getRequestEvent } from '$app/server';
-import { db } from '$lib/server/db';
+import { prisma } from './db/prisma';
 
 export const auth = betterAuth({
 	baseURL: env.ORIGIN,
 	secret: env.BETTER_AUTH_SECRET,
-	database: drizzleAdapter(db, { provider: 'mysql' }),
+	database: prismaAdapter(prisma, { provider: 'sqlserver' }),
 	emailAndPassword: { enabled: true },
 	socialProviders: {
 		github: {

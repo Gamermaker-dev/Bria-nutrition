@@ -5,6 +5,7 @@
 	import Container from '$lib/components/Container.svelte';
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
 	import PostForm from '$lib/components/PostForm.svelte';
+	import { isLoading } from '$lib/stores.js';
 	import { formatDate } from '$lib/util.js';
 	import { mdiGoogle, mdiUploadBox } from '@mdi/js';
 	import { untrack } from 'svelte';
@@ -56,19 +57,31 @@
 		method="post"
 		action={resolve('/food/custom?/scan')}
 		enctype="multipart/form-data"
-		use:enhance
+		use:enhance={() => {
+			const timer = setTimeout(() => ($isLoading = true), 100);
+
+			return async ({ update }) => {
+				await update();
+				clearTimeout(timer);
+				$isLoading = false;
+			}
+		}}
 	>
 		<div class="grid gap-4">
 			<input type="file" name="label" accept=".png,.jpeg" />
-			<ButtonGroup>
+			<ButtonGroup rounded class="gap-4">
 				<Button class="bg-primary text-white" icon={mdiUploadBox} type="submit">Upload</Button>
 				<Button
 					class="bg-blue-500 text-white"
 					icon={mdiGoogle}
 					type="submit"
-					formaction={resolve('/food/custom?/gemini')}>Try Gemini</Button
+					formaction={resolve('/food/custom?/gemini')}>Try Gemini *</Button
 				>
 			</ButtonGroup>
+			<span class="text-xs italic"
+				>* AI can make mistakes. Please verify results. By using this, your image will uploaded to
+				Google Gemini and used to train their model.</span
+			>
 		</div>
 	</form>
 </Dialog>

@@ -10,10 +10,11 @@ import {
 	varchar
 } from 'drizzle-orm/mysql-core';
 import { user } from '../auth.schema';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm/table';
-import { activityLevel, type ActivityLevel } from '../schema';
+import type { InferInsertModel } from 'drizzle-orm/table';
+import { activityLevel } from '../schema';
 import { SQL, sql } from 'drizzle-orm';
-import { physicalType, type PhysicalType } from '../physical_type/schema';
+import { physicalType } from '../physical_type/schema';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
 export const profile = mysqlTable(
 	'profile',
@@ -52,15 +53,36 @@ export const profile = mysqlTable(
 	]
 );
 
-type ProfileSelectModel = InferSelectModel<typeof profile>;
-type ProfileAugmented = ProfileSelectModel & {
-	physicalType: PhysicalType;
-	activityLevel: ActivityLevel;
+export const profileWithUser = {
+	select: {
+		id: true,
+		userId: true,
+		user: { select: { id: true, email: true } },
+		birthDate: true,
+		physicalTypeId: true,
+		physicalType: { select: { id: true, name: true } },
+		heightFeet: true,
+		heightInch: true,
+		weight: true,
+		age: true,
+		activityLevelId: true,
+		activityLevel: { select: { id: true, name: true } }
+	}
 };
-export type Profile = ProfileAugmented;
+export type Profile = Prisma.profileGetPayload<typeof profileWithUser>;
 export type ProfileInput = InferInsertModel<typeof profile>;
 export type UserWithProfile = {
-	userId: string;
-	email: string;
-	profile: Profile;
+	user: {
+		id: string;
+		email: string;
+	};
+	profile: Prisma.profileSelect | null;
+	physicalType: {
+		id: number;
+		name: string;
+	};
+	activityLevel: {
+		id: number;
+		name: string;
+	};
 };

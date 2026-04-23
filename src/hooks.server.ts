@@ -3,7 +3,6 @@ import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { userController } from '$lib/server/controllers';
-import type { Profile } from '$lib/server/db/schema';
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	try {
@@ -12,7 +11,7 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 		if (session) {
 			event.locals.session = session.session;
 			event.locals.user = session.user;
-			event.locals.profile = (await userController.getById(event.locals.user.id)).data as Profile;
+			event.locals.profile = (await userController.getById(event.locals.user.id)).data;
 		}
 
 		const userAgent = event.request.headers.get('User-Agent');
@@ -20,6 +19,7 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 
 		return svelteKitHandler({ event, resolve, auth, building });
 	} catch (err) {
+		console.error('Unexpected Better Auth exception:', err);
 		throw new Error(err);
 	}
 };

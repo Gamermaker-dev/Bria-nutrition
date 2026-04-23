@@ -12,7 +12,7 @@ const formatDate = (val: Date | string, format?: 'date' | 'month' | 'year') => {
 	return format === 'year'
 		? `${date.getFullYear()}`
 		: format === 'month'
-			? `${date.getFullYear()} - ${date.getMonth()}`
+			? `${date.getFullYear()} - ${date.getMonth() + 1}`
 			: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 };
 

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Container from '$lib/components/Container.svelte';
+	import type { BriaTableData } from '$lib/components/BriaTable.svelte';
+	import BriaTable from '$lib/components/BriaTable.svelte';
 	import { formatDate } from '$lib/util.js';
 	import { mdiArrowRight } from '@mdi/js';
 	import { untrack } from 'svelte';
@@ -52,6 +53,14 @@
 	});
 
 	let dateRange = $derived({ from: data.startDate, to: data.endDate });
+	let headers: string[] = ['Period', 'Calories', 'Carbs', 'Protein', 'Fat'];
+	let tableData: BriaTableData[] = $derived.by(() => (report.map((r, i) => ({ id: i, cells: [
+				{ isHeader: true, value: r.mealDate },
+				{ value: r.calories.toFixed(0) },
+				{ value: r.carbs.toFixed(0) },
+				{ value: r.protein.toFixed(0) },
+				{ value: r.fat.toFixed(0) }
+			]}))))
 </script>
 
 <div class="flex flex-col gap-4 mx-auto">
@@ -70,7 +79,7 @@
 		/>
 		<ButtonGroup rounded>
 			<Button
-                class="bg-emerald-500 text-white"
+				class="bg-emerald-500 text-white"
 				icon={mdiArrowRight}
 				on:click={() =>
 					goto(
@@ -81,28 +90,5 @@
 			/>
 		</ButtonGroup>
 	</div>
-	<Container>
-		<table class="table table-auto">
-			<thead>
-				<tr class="bg-emerald-500 text-white font-bold p-2 gap-4">
-					<th>Period</th>
-					<th>Calories</th>
-					<th>Carbs</th>
-					<th>Protein</th>
-					<th>Fat</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each report as data (data.mealDate)}
-					<tr class="border-b-4 border-b-black p-2 gap-4">
-						<td>{data.mealDate}</td>
-						<td>{data.calories.toFixed(0)}</td>
-						<td>{data.carbs.toFixed(0)}</td>
-						<td>{data.protein.toFixed(0)}</td>
-						<td>{data.fat.toFixed(0)}</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</Container>
+	<BriaTable {headers} data={tableData} />	
 </div>
