@@ -1,10 +1,12 @@
-import type { InferSelectModel } from "drizzle-orm";
-import { datetime, mysqlTable, serial, text } from "drizzle-orm/mysql-core";
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const label = mysqlTable('label', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull().unique(),
-    dateAdded: datetime('date_added').notNull().$default(() => new Date())
-});
+export const label = {
+	select: {
+		id: true,
+		name: true,
+		dateAdded: true
+	}
+};
 
-export type Label = InferSelectModel<typeof label>;
+export type Label = Prisma.labelGetPayload<typeof label>;
+export type LabelInput = Prisma.labelCreateInput;

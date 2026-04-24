@@ -1,33 +1,29 @@
-import { type InferSelectModel } from 'drizzle-orm';
-import { datetime, index, int, serial, text, varchar } from 'drizzle-orm/mysql-core';
-import { mysqlTable } from 'drizzle-orm/mysql-core/table';
 import type { Nutrient, NutrientWithAmount } from '../schema';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const food = mysqlTable(
-	'food',
+export const food = {
+	select :
 	{
-		id: serial('id').primaryKey(),
-		name: text('name').notNull(),
-		fdcId: int('fdcId'),
-		userId: varchar('user_id', { length: 36 }),
-		dateAdded: datetime('date_added')
-			.notNull()
-			.$defaultFn(() => new Date())
-	},
-	(table) => [index('userId_indx').on(table.userId)]
-);
+		id: true,
+		name: true,
+		fdcId: true,
+		userId: true,
+		dateAdded: true
+	}
+};
 
-export type Food = InferSelectModel<typeof food>;
+export type Food = Prisma.foodGetPayload<typeof food>;
 export interface FoodWithNutrients extends Food {
 	nutrients: Nutrient[];
 }
+export type _FoodInput = Prisma.foodCreateInput;
 export type FoodInput = {
 	id?: number;
 	name: string;
 	fdcId: number;
 	serving: number;
 	nutrients: { nutrientId: number; amount: number }[];
-	mealDate: string;
+	mealDate: Date | string;
 	userId: string;
 };
 export interface CustomFood extends Food {

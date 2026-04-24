@@ -1,6 +1,6 @@
+import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 import { error, isRedirect, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 
 export const load: LayoutServerLoad = async (event) => {
 	try {
@@ -27,10 +27,17 @@ export const load: LayoutServerLoad = async (event) => {
 				]
 			: [];
 
-		return { user: event.locals.user, navbar, url: event.url, isMobile: event.locals.isMobile };
+		return {
+			user: event.locals.user,
+			navbar,
+			url: event.url,
+			isMobile: event.locals.isMobile,
+			displayError: event.url.searchParams.get('error') === 'true'
+		};
 	} catch (err) {
 		if (isRedirect(err)) throw err;
 
-		throw error(500, { message: `${err}` });
+		console.error('Unexpected error in layout:', err);
+		throw error(500);
 	}
 };

@@ -1,11 +1,11 @@
-import { error, fail, isRedirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
 import { foodController, nutrientController, usdaApi } from '$lib/server/controllers';
 import type { FoodInput } from '$lib/server/db/schema';
-import { checkForErrors, createActionError, formatDate } from '$lib/util';
-import type { FoodById } from '$lib/types/usda/FoodById';
 import { addFoodSchema } from '$lib/server/schemas';
+import type { FoodById } from '$lib/types/usda/FoodById';
+import { checkForErrors, createActionError } from '$lib/util';
+import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import z from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -34,10 +34,10 @@ export const load: PageServerLoad = async (event) => {
 					description: res.data.name,
 					gtinUpc: 0,
 					publicationDate: res.data.dateAdded,
-					foodNutrients: res.data.nutrients.map((f) => ({
-						name: f.name,
-						unitName: f.unit,
-						number: f.fdcNumber.toString(),
+					foodNutrients: res.data.foodNutrient.map((f) => ({
+						name: f.nutrient.name,
+						unitName: f.nutrient.unit,
+						number: f.nutrient.fdcNumber.toString(),
 						derivationCode: '',
 						derivationDescription: '',
 						amount: f.amount
@@ -52,8 +52,11 @@ export const load: PageServerLoad = async (event) => {
 
 		return error(400, { message: 'Bad request.' });
 	} catch (err) {
-		console.error(`${err}`);
-		return error(500, { message: 'Unexpected error occured.' });
+		console.error('Unexpected error loading food add page:', err);
+		const previousPage = event.request.headers.get('referer') || '/';
+		const url = new URL(previousPage);
+		if (url.searchParams.get('error') == undefined) url.searchParams.append('error', 'true');
+		redirect(307, url);
 	}
 };
 
@@ -65,7 +68,7 @@ export const actions: Actions = {
 			rawInput.mealDate = new Date(rawInput.mealDate);
 			const result = addFoodSchema.safeParse(rawInput);
 
-            console.log(formData.input);
+			console.log(formData.input);
 
 			if (!result.success) {
 				const errors = z.treeifyError(result.error);
@@ -85,7 +88,7 @@ export const actions: Actions = {
 
 			const input: FoodInput = {
 				userId: event.locals.user.id ?? '',
-				mealDate: formatDate(mealDate),
+				mealDate: mealDate,
 				name: result.data.name,
 				serving,
 				fdcId,
@@ -101,7 +104,12 @@ export const actions: Actions = {
 					}) ?? []
 			};
 
-			await foodController.create(input);
+			const res = await foodController.create(input);
+			if (res.status !== 200)
+				return fail(
+					400,
+					createActionError({ add: ['Whoops! Something went wrong adding this to your meal!'] })
+				);
 
 			return { status: 200, message: 'Successfully added food!' };
 		} catch (err) {

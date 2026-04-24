@@ -10,24 +10,24 @@ export const load: PageServerLoad = async (event) => {
 			search?: string;
 			page?: string;
 			tab?: string;
-            submit?: string;
+			submit?: string;
 		};
 		const search = params.search?.trim() ?? '';
 		const rawPage = params.page?.trim() ?? '1';
 		let page = parseInt(rawPage, 10);
 		if (isNaN(page)) page = 1;
 		const tab = params.tab?.trim() === 'custom' ? 'custom' : 'usda';
-        const submit = params.submit === 'true';
+		const submit = params.submit === 'true';
 
 		let results: FoodPaginatedSearch | undefined = undefined;
 
 		if (tab === 'usda') {
-            try {
-			results = search !== '' ? await usdaApi.searchFoods(search, page) : undefined;
-            } catch (err) {
-                console.error('Error with USDA:', err);
-                results = undefined;
-            }
+			try {
+				results = search !== '' ? await usdaApi.searchFoods(search, page) : undefined;
+			} catch (err) {
+				console.error('Error with USDA:', err);
+				results = undefined;
+			}
 		} else {
 			const custom = await foodController.getByUserId(event.locals.user.id, page, search);
 			checkForErrors(custom);
@@ -38,8 +38,8 @@ export const load: PageServerLoad = async (event) => {
 			results = {
 				currentPage: page,
 				pageList: [],
-				totalHits: count.data?.value ?? 0,
-				totalPages: Math.ceil((count.data?.value ?? 0) / 50),
+				totalHits: count.data ?? 0,
+				totalPages: Math.ceil((count.data ?? 0) / 50),
 				foods:
 					custom.data?.map((m) => ({
 						fdcId: m.id,

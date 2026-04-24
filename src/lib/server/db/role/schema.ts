@@ -1,13 +1,12 @@
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { datetime, mysqlTable, serial, text } from 'drizzle-orm/mysql-core';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const role = mysqlTable('role', {
-	id: serial('int').primaryKey(),
-	name: text('name').notNull(),
-	dateAdded: datetime('date_added')
-		.notNull()
-		.$default(() => new Date())
-});
+export const role = {
+	select: {
+		id: true,
+		name: true,
+		dateAdded: true
+	}
+};
 
-export type Role = InferSelectModel<typeof role>;
-export type RoleInput = InferInsertModel<typeof role>;
+export type Role = Prisma.roleGetPayload<typeof role>;
+export type RoleInput = Prisma.roleCreateInput;

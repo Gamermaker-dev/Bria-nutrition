@@ -1,16 +1,24 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
-	import type { Snippet } from 'svelte';
-	import type { LayoutServerData } from './$types';
-	import '../app.css';
-	import { getSettings } from 'svelte-ux';
-	import Web from './Web.svelte';
-	import Mobile from './Mobile.svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import favicon from '$lib/assets/favicon.svg';
+	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 	import Loading from '$lib/components/Loading.svelte';
-	import { isLoading } from '$lib/stores';
+	import { displayError, isLoading } from '$lib/stores';
+	import { untrack, type Snippet } from 'svelte';
+	import { getSettings } from 'svelte-ux';
+	import '../app.css';
+	import type { LayoutServerData } from './$types';
+	import Mobile from './Mobile.svelte';
+	import Web from './Web.svelte';
 
 	let { data, children }: { data: LayoutServerData; children: Snippet<[]> } = $props();
+
+	$effect(() => {
+		const _displayError = data.displayError;
+		untrack(() => {
+			$displayError = _displayError;
+		});
+	});
 
 	const { showDrawer } = getSettings();
 
@@ -25,6 +33,16 @@
 			clearTimeout(timer);
 			$isLoading = false;
 		});
+	});
+
+	afterNavigate((nav) => {
+		if (nav.type === 'enter') {
+			if (nav.to?.url.searchParams.get('error')) {
+				const newUrl = new URL(nav.to.url);
+				newUrl.searchParams.delete('error');
+				history.replaceState(null, '', newUrl);
+			}
+		}
 	});
 
 	afterNavigate((nav) => {
@@ -46,6 +64,8 @@
 {#if $isLoading}
 	<Loading />
 {/if}
+
+<ErrorBanner />
 
 <div class="flex flex-col min-h-screen">
 	{#if data.isMobile}

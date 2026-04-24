@@ -46,9 +46,13 @@ export const actions: Actions = {
 			}
 
 			const res = await userController.update({
-				userId: event.locals.user?.id ?? '',
-				...result.data
+				...result.data,
+				user: { connect: { id: event.locals.user?.id ?? '' }},
+				physicalType: { connect: { id: result.data.physicalTypeId }},
+				activityLevel: { connect: { id: result.data.activityLevelId }},
+				dateAdded: new Date()
 			});
+			
 			if (res.status !== 200) {
 				console.error('Failed to update profile:', res.message);
 				return fail(400, createActionError({ update: ['Failed to update profile!'] }));

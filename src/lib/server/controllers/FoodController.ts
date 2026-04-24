@@ -1,309 +1,268 @@
-import { and, asc, count, eq, like, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import {
-	food,
-	foodNutrient,
-	meal,
-	mealFood,
-	nutrient,
-	type CustomFood,
-	type Food,
-	type FoodInput
-} from '$lib/server/db/schema';
-import type { Response } from '$lib/server/Response';
+import { type Food, type FoodInput } from '$lib/server/db/schema';
+import type { PrismaClientKnownRequestError } from '../../../prisma/generated/prisma/internal/prismaNamespace';
 import { BaseModelController } from '../db/base';
-import type { MySqlRawQueryResult } from 'drizzle-orm/mysql2';
-import { error } from '@sveltejs/kit';
+import { prisma } from '../db/prisma';
 
-export class FoodController extends BaseModelController<typeof food> {
-	constructor(tableName: string, table: typeof food) {
-		super(tableName, table);
+export class FoodController extends BaseModelController {
+	constructor(tableName: string) {
+		super(tableName);
 	}
 
-	public get = async (): Response<Food[]> => {
+	private convertMany = (res: Food[]) => res.map((r) => ({ ...r, id: Number(r.id) }));
+	private convertSingle = (res: Food) => ({
+		...res,
+		id: Number(res.id)
+	});
+
+	public get = async () => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}s`);
 
-			const data = await db.select().from(this.TABLE);
+			const data = await prisma.food.findMany().then(this.convertMany);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public getById = async (id: number): Response<Food> => {
+	public getById = async (id: number) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ById`);
-			const data = this.returnOneRecord(
-				await db.select().from(this.TABLE).where(eq(this.TABLE.id, id))
-			);
+			const data = await prisma.food
+				.findUniqueOrThrow({
+					where: { id }
+				})
+				.then(this.convertSingle);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public getCustomFoodById = async (id: number): Response<CustomFood> => {
+	public getCustomFoodById = async (id: number) => {
 		try {
 			this.setOperation(`getCustom${this.TABLE_NAME}ById`);
-			const data = await db
-				.select({
-					id: this.TABLE.id,
-					name: this.TABLE.name,
-					fdcId: this.TABLE.fdcId,
-					userId: this.TABLE.userId,
-					dateAdded: this.TABLE.dateAdded,
-					nutrient: {
-						id: nutrient.id,
-						name: nutrient.name,
-						unit: nutrient.unit,
-						fdcNutrientId: nutrient.fdcNutrientId,
-						fdcNumber: nutrient.fdcNumber,
-						amount: foodNutrient.amount,
-						dateAdded: nutrient.dateAdded
+			const data = await prisma.food
+				.findUniqueOrThrow({
+					select: {
+						id: true,
+						name: true,
+						fdcId: true,
+						userId: true,
+						dateAdded: true,
+						foodNutrient: {
+							select: {
+								nutrient: {
+									select: {
+										id: true,
+										name: true,
+										unit: true,
+										fdcNutrientId: true,
+										fdcNumber: true,
+										dateAdded: true
+									}
+								},
+								amount: true
+							}
+						}
+					},
+					where: {
+						id
 					}
 				})
-				.from(this.TABLE)
-				.innerJoin(foodNutrient, eq(this.TABLE.id, foodNutrient.foodId))
-				.innerJoin(nutrient, eq(foodNutrient.nutrientId, nutrient.id))
-				.where(eq(this.TABLE.id, id));
+				.then((res) => ({
+					...res,
+					id: Number(res.id),
+					foodNutrient: res.foodNutrient.map((f) => ({
+						...f,
+						nutrient: {
+							...f.nutrient,
+							id: Number(f.nutrient.id),
+							fdcNutrientId: Number(f.nutrient.fdcNutrientId)
+						}
+					}))
+				}));
 
-			if (data.length > 0) {
-				const customFood = data.reduce((curr, val) => {
-					const f = curr.find((c) => c.id === val.id);
-
-					const nutrient = {
-						id: val.nutrient.id,
-						name: val.nutrient.name,
-						unit: val.nutrient.unit,
-						fdcNutrientId: val.nutrient.fdcNutrientId,
-						fdcNumber: val.nutrient.fdcNumber,
-						dateAdded: val.nutrient.dateAdded,
-						amount: val.nutrient.amount
-					};
-					if (f) f.nutrients.push(nutrient);
-					else
-						curr.push({
-							id: val.id,
-							name: val.name,
-							fdcId: val.fdcId,
-							dateAdded: val.dateAdded,
-							userId: val.userId,
-							nutrients: [nutrient]
-						});
-					return curr;
-				}, [] as CustomFood[]);
-
-				if (customFood.length !== 1) throw Error('Something unexpected happened');
-				return this.success(customFood[0]);
-			}
-
-			throw Error('Food does not exist!');
+			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public getByUserId = async (
-		userId: string,
-		page: number = 1,
-		search?: string
-	): Response<Food[]> => {
+	public getByUserId = async (userId: string, page: number = 1, search?: string) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ByUserId`);
-			let query = db.select().from(this.TABLE).$dynamic();
 
-			if (search != undefined && search.trim().length > 0) {
-				query = query
-					.where(
-						and(eq(this.TABLE.userId, userId), like(this.TABLE.name, `%${search}%`))
-					)
-					.$dynamic();
-			} else {
-				query = query.where(eq(this.TABLE.userId, userId)).$dynamic();
-			}
-			const data = await query
-				.limit(50)
-				.offset((page - 1) * 50)
-				.orderBy(asc(this.TABLE.id));
-
-			return this.success(data);
-		} catch (err) {
-			return this.error(err);
-		}
-	};
-
-	public getTotalCustomFoods = async (
-		userId: string,
-		search?: string
-	): Response<{ value: number }> => {
-		try {
-			let query = db
-				.select({ value: count(this.TABLE.id) })
-				.from(this.TABLE)
-				.$dynamic();
-
-			if (search != undefined && search.trim().length > 0) {
-				query = query.where(
-					and(eq(this.TABLE.userId, userId), like(this.TABLE.name, `%${search}%`))
-				);
-			} else {
-				query = query.where(eq(this.TABLE.userId, userId));
-			}
-			const data = this.returnOneRecord(await query);
-
-			return this.success(data);
-		} catch (err) {
-			return this.error(err);
-		}
-	};
-
-	public getDropdown = async (): Response<{ label: string; value: number }[]> => {
-		try {
-			this.setOperation(`get${this.TABLE_NAME}Dropdown`);
-
-			const data = await db
-				.select({
-					label: this.TABLE.name,
-					value: this.TABLE.id
+			const data = await prisma.food
+				.findMany({
+					where: {
+						userId,
+						name: { contains: search }
+					},
+					take: 50,
+					skip: (page - 1) * 50
 				})
-				.from(this.TABLE);
+				.then(this.convertMany);
+
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public create = async (input: FoodInput): Response<MySqlRawQueryResult> => {
+	public getTotalCustomFoods = async (userId: string, search?: string) => {
+		try {
+			this.setOperation(`getTotalCustom${this.TABLE_NAME}`);
+			const data = await prisma.food.count({
+				where: {
+					userId,
+					name: {
+						contains: search
+					}
+				}
+			});
+
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
+
+	public create = async (input: FoodInput) => {
 		try {
 			this.setOperation(`create${this.TABLE_NAME}`);
 
-			const results = await db.transaction(async (tx) => {
+			const results = await prisma.$transaction(async (tx) => {
+				const TODAY = new Date();
 				let mealId: number = 0;
 				let foodId: number = 0;
 
-				const existingMeals = await tx
-					.select()
-					.from(meal)
-					.where(
-						and(eq(meal.userId, input.userId), eq(meal.mealDate, sql<string>`${input.mealDate}`))
-					);
-
-				if (existingMeals.length === 0) {
-					const newMeal = await tx
-						.insert(meal)
-						.values({
-							mealDate: new Date(input.mealDate),
-							userId: input.userId
+				try {
+					const existingMeal = await tx.meal
+						.findFirstOrThrow({
+							where: {
+								AND: [{ userId: input.userId }, { mealDate: input.mealDate }]
+							}
 						})
-						.$returningId();
+						.then((res) => ({ ...res, id: Number(res.id) }));
 
-					if (newMeal.length === 0) {
-						tx.rollback();
-						return { success: false, error: 'New meal for user could not be created.' };
-					}
-
-					mealId = newMeal[0].id;
-				} else {
-					mealId = existingMeals[0].id;
-				}
-
-				// check if we've already added this
-				let existingFood: Food[] = [];
-				if (input.fdcId) {
-					existingFood = await tx
-						.select()
-						.from(this.TABLE)
-						.where(eq(this.TABLE.fdcId, input.fdcId));
-				}
-
-				if (existingFood.length === 0) {
-					const newFood = await tx
-						.insert(this.TABLE)
-						.values(
-							input.fdcId !== 0
-								? {
-										name: input.name,
-										fdcId: input.fdcId
+					mealId = existingMeal.id;
+				} catch (err: unknown) {
+					if (
+						(err as PrismaClientKnownRequestError).code != null &&
+						(err as PrismaClientKnownRequestError).code === 'P2025'
+					) {
+						try {
+							const newMeal = await tx.meal
+								.create({
+									data: {
+										mealDate: input.mealDate,
+										user: { connect: { id: input.userId } },
+										dateAdded: TODAY
 									}
-								: { name: input.name, userId: input.userId }
-						)
-						.$returningId();
+								})
+								.then((r) => ({ ...r, id: Number(r.id) }));
 
-					if (newFood.length === 0) {
-						tx.rollback();
-						return { success: false, error: 'New food could not be created.' };
+							mealId = newMeal.id;
+						} catch (err) {
+							console.error('Error creating new meal:', err);
+							throw new Error('Failed to create meal!');
+						}
+					} else {
+						console.error('Error fetching existing meal:', err);
+						throw new Error('Unexpected error occured in transaction for create food');
 					}
-
-					foodId = newFood[0].id;
-
-					// save food nutrient combos
-					const newNutrients = await tx
-						.insert(foodNutrient)
-						.values(
-							input.nutrients.map((n) => ({ foodId, nutrientId: n.nutrientId, amount: n.amount }))
-						);
-
-					if (newNutrients[0].affectedRows < input.nutrients.length) {
-						tx.rollback();
-						return { success: false, error: 'FoodNutrient combo could not be saved!' };
-					}
-				} else {
-					foodId = existingFood[0].id;
 				}
 
-				// finally, save meal food combo
-				const newMealFood = await tx
-					.insert(mealFood)
-					.values({ mealId, foodId, amount: input.serving });
+				try {
+					const existingFood = await tx.food
+						.findFirstOrThrow({
+							where: { fdcId: input.fdcId === 0 ? undefined : input.fdcId }
+						})
+						.then(this.convertSingle);
 
-				if (newMealFood[0].affectedRows === 0) {
-					tx.rollback();
-					return { status: 400, error: 'Food could not be saved to meal.' };
+					foodId = existingFood.id;
+				} catch (err) {
+					if (
+						(err as PrismaClientKnownRequestError)?.code != null &&
+						(err as PrismaClientKnownRequestError).code === 'P2025'
+					) {
+						const newFood = await tx.food
+							.create({
+								data: {
+									name: input.name,
+									fdcId: input.fdcId,
+									foodNutrient: {
+										create: input.nutrients.map((n) => ({
+											nutrientId: n.nutrientId,
+											amount: n.amount
+										}))
+									},
+									dateAdded: TODAY
+								}
+							})
+							.then(this.convertSingle);
+
+						foodId = newFood.id;
+					} else {
+						console.error('Unexpected error finding existing food:', err);
+						throw new Error();
+					}
 				}
 
-				return { success: true, data: newMealFood };
+				console.log(`Adding meal for meal Id ${mealId} and food Id ${foodId}`);
+				try {
+					return await tx.mealFood.create({
+						data: {
+							meal: { connect: { id: mealId } },
+							food: { connect: { id: foodId } },
+							amount: input.serving
+						}
+					});
+				} catch (err) {
+					console.error('Unexpected errr adding meal:', err);
+					throw new Error();
+				}
 			});
 
-			if (!results.success) throw error(400, { message: results.error ?? '' });
-			return this.success(results.data);
+			return this.success(results);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public delete = async (foodId: number, mealId: number): Response<MySqlRawQueryResult> => {
+	public delete = async (foodId: number, mealId: number) => {
 		try {
 			this.setOperation(`delete${this.TABLE_NAME}`);
-			const results = await db.transaction(async (tx) => {
-				// First -- delete the mealFood combos
-				const deletedMealFoods = await tx
-					.delete(mealFood)
-					.where(and(eq(mealFood.foodId, foodId), eq(mealFood.mealId, mealId)));
+			const results = await prisma.$transaction(async (tx) => {
+				try {
+					await tx.mealFood.deleteMany({
+						where: {
+							AND: [{ foodId: foodId }, { mealId: mealId }]
+						}
+					});
 
-				if (deletedMealFoods[0].affectedRows === 0) {
-					tx.rollback();
-					return { success: false, error: 'Failed to delete foods from meal.' };
-				}
+					const remainingMeals = await tx.mealFood
+						.findMany({
+							where: { mealId: mealId }
+						})
+						.then((res) =>
+							res.map((r) => ({ ...r, foodId: Number(r.foodId), mealId: Number(r.mealId) }))
+						);
 
-				// Next, check if meal contains any more food
-				const remainingMeals = await tx.select().from(mealFood).where(eq(mealFood.mealId, mealId));
-
-				if (remainingMeals.length === 0) {
-					// delete the meal
-					const deletedMeal = await tx.delete(meal).where(eq(meal.id, mealId));
-
-					if (deletedMeal[0].affectedRows === 0) {
-						tx.rollback();
-						return { success: false, error: 'Failed to delete empty meal' };
+					if (remainingMeals.length === 0) {
+						await tx.meal.delete({
+							where: { id: mealId }
+						});
 					}
+
+					return remainingMeals;
+				} catch (err) {
+					console.error('Unexpected error in delete food transaction:', err);
+					throw new Error();
 				}
-
-				return { success: true, data: deletedMealFoods, error: '' };
 			});
-
-			if (!results?.success) throw error(400, { message: results?.error ?? '' });
-			return this.success(results.data);
+			return this.success(results);
 		} catch (err) {
 			return this.error(err);
 		}

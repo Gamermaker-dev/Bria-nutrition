@@ -1,29 +1,15 @@
-import { bigint, float, index, int, mysqlTable, serial } from 'drizzle-orm/mysql-core';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { physicalType } from '../physical_type/schema';
-import { label } from '../schema';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const recommendation = mysqlTable(
-	'recommendation',
-	{
-		id: serial('id').primaryKey(),
-		labelId: bigint('label_id', { mode: 'number', unsigned: true })
-			.notNull()
-			.references(() => label.id),
-		minAge: int('min_age').notNull(),
-		maxAge: int('max_age'),
-		physicalTypeId: bigint('physical_type_id', { mode: 'number', unsigned: true })
-			.notNull()
-			.references(() => physicalType.id),
-		amount: float('amount')
-			.notNull()
-			.$default(() => 0)
-	},
-	(table) => [
-		index('labelId_indx').on(table.labelId),
-		index('physicalTypeId_indx').on(table.physicalTypeId)
-	]
-);
+export const recommendation = {
+	select: {
+		id: true,
+		labelId: true,
+		minAge: true,
+		maxAge: true,
+		physicalTypeId: true,
+		amount: true
+	}
+};
 
-export type Recommendation = InferSelectModel<typeof recommendation>;
-export type RecommendationInput = InferInsertModel<typeof recommendation>;
+export type Recommendation = Prisma.recommendationGetPayload<typeof recommendation>;
+export type RecommendationInput = Prisma.recommendationCreateInput;

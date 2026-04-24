@@ -1,8 +1,8 @@
-import { isRedirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
-import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { userController } from '$lib/server/controllers';
+import { isRedirect, redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
+import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	try {
@@ -20,7 +20,7 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 		return svelteKitHandler({ event, resolve, auth, building });
 	} catch (err) {
 		console.error('Unexpected Better Auth exception:', err);
-		throw new Error(err);
+		throw new Error();
 	}
 };
 
@@ -31,7 +31,10 @@ export const handleError: HandleServerError = (event) => {
 		// do nothing
 	} else {
 		console.error(
-			`An error occurred for ${event.event.route.id} and user ${event.event.locals.user ?? 0}. The error is as folows:`, event.error
+			`An error occurred for ${event.event.route.id} and user ${event.event.locals.user ?? 0}. The error is as folows:`,
+			event.error
 		);
+		const previousPage = event.event.request.headers.get('referer') || '/';
+		redirect(307, previousPage);
 	}
 };

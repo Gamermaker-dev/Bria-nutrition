@@ -5,6 +5,7 @@
 	import Container from '$lib/components/Container.svelte';
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
 	import PostForm from '$lib/components/PostForm.svelte';
+	import { isLoading } from '$lib/stores.js';
 	import { Button, ButtonGroup } from 'svelte-ux';
 
 	let { data, form } = $props();
@@ -49,7 +50,15 @@
 			>Are you sure you wish to record the information above?</span
 		>
 		<ButtonGroup class="gap-2">
-			<form method="post" action={resolve('/food/add')} use:enhance>
+			<form method="post" action={resolve('/food/add')} use:enhance={() => {
+				const timer = setTimeout(() => ($isLoading = true), 100);
+
+				return async ({ update }) => {
+					await update();
+					clearTimeout(timer);
+					$isLoading = false;
+				}
+			}}>
 				<input
 					type="hidden"
 					name="input"

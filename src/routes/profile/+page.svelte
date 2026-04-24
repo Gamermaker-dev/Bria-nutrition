@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import PostForm from '$lib/components/PostForm.svelte';
-	import type { ProfileInput } from '$lib/server/db/schema.js';
 	import {
 		mdiBabyBottle,
 		mdiHumanFemale,
@@ -18,14 +17,14 @@
 
 	let { data, form } = $props();
 
-	let input: Partial<ProfileInput> = $state({
-		id: data.profile?.profile.id,
-		birthDate: data.profile?.profile.birthDate,
-		physicalTypeId: data.profile?.profile.physicalTypeId,
-		heightFeet: data.profile?.profile.heightFeet,
-		heightInch: data.profile?.profile.heightInch,
-		activityLevelId: data.profile?.profile.activityLevelId,
-		weight: data.profile?.profile.weight
+	let input = $state({
+		id: data.profile?.id,
+		birthDate: data.profile?.birthDate,
+		physicalTypeId: data.profile?.physicalTypeId,
+		heightFeet: data.profile?.heightFeet,
+		heightInch: data.profile?.heightInch,
+		activityLevelId: data.profile?.activityLevelId,
+		weight: data.profile?.weight
 	});
 	let activityLevels = $derived(data.activityLevels ? data.activityLevels : []);
 	let physicalTypes = $derived(data.physicalTypes ? data.physicalTypes : []);
@@ -96,13 +95,13 @@
 			>
 				<div class="grid grid-cols-[auto,1fr]">
 					<Icon
-						path={level.multiplier == '1.200'
+						path={level.multiplier == 1.2
 							? mdiSeat
-							: level.multiplier == '1.375'
+							: level.multiplier == 1.375
 								? mdiWalk
-								: level.multiplier == '1.550'
+								: level.multiplier == 1.55
 									? mdiRun
-									: level.multiplier == '1.725'
+									: level.multiplier == 1.725
 										? mdiRunFast
 										: mdiWeightLifter}
 					/>

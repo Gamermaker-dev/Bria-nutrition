@@ -4,40 +4,25 @@ import { FoodController } from './controllers/FoodController';
 import { MealController } from './controllers/MealController';
 import { NutrientController } from './controllers/NutrientController';
 import { PhysicalTypeController } from './controllers/PhysicalTypeController';
-import { RecommendationsController } from './controllers/RecommendationController';
+import { RecommendationController } from './controllers/RecommendationController';
 import { RoleController } from './controllers/RoleController';
 import { UserController } from './controllers/UserController';
-import {
-	activityLevel,
-	food,
-	meal,
-	nutrient,
-	recommendation,
-	profile,
-	physicalType,
-	role
-} from './db/schema';
 import { UsdaAPIController } from './usda';
-config({ path: '.env' })
+config({ path: '.env' });
 
 // define controllers
 const activityLevelController: ActivityLevelController = new ActivityLevelController(
-	'ActivityLevel',
-	activityLevel
+	'ActivityLevel'
 );
-const nutrientController: NutrientController = new NutrientController('Nutrient', nutrient);
-const foodController: FoodController = new FoodController('Food', food);
-const mealController: MealController = new MealController('Meal', meal);
-const userController: UserController = new UserController('Profile', profile);
-const recommendationController: RecommendationsController = new RecommendationsController(
-	'Recommendation',
-	recommendation
+const nutrientController: NutrientController = new NutrientController('Nutrient');
+const foodController: FoodController = new FoodController('Food');
+const mealController: MealController = new MealController('Meal');
+const userController: UserController = new UserController('Profile');
+const recommendationController: RecommendationController = new RecommendationController(
+	'Recommendation'
 );
-const roleController: RoleController = new RoleController('Role', role);
-const physicalTypeController: PhysicalTypeController = new PhysicalTypeController(
-	'PhysicalType',
-	physicalType
-);
+const roleController: RoleController = new RoleController('Role');
+const physicalTypeController: PhysicalTypeController = new PhysicalTypeController('PhysicalType');
 const usdaApi = new UsdaAPIController(process.env.usda_api_key ?? '');
 
 export {

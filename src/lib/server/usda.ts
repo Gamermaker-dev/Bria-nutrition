@@ -1,9 +1,7 @@
+import type { FoodById } from '$lib/types/usda/FoodById';
 import type { FoodListItem } from '$lib/types/usda/FoodListItem';
 import type { FoodPaginatedSearch } from '$lib/types/usda/FoodPaginatedSearch';
-import { eq, inArray } from 'drizzle-orm';
-import { db } from './db';
-import { label, labelNutrient, nutrient } from './db/schema';
-import type { FoodById } from '$lib/types/usda/FoodById';
+import { prisma } from './db/prisma';
 
 export class UsdaAPIController {
 	private _apiKey: string;
@@ -25,7 +23,6 @@ export class UsdaAPIController {
 				.then(async (res) => {
 					if (res.status === 200) {
 						const data = (await res.json()) as FoodPaginatedSearch;
-						console.log(JSON.stringify(data));
 						return data;
 					} else throw Error((await res.json()).message);
 				})
@@ -43,15 +40,17 @@ export class UsdaAPIController {
 	};
 
 	getById = async (fdcId: number) => {
-		const getLabels = await db
-			.selectDistinct({ fdcNumber: nutrient.fdcNumber })
-			.from(nutrient)
-			.innerJoin(labelNutrient, eq(nutrient.id, labelNutrient.nutrientId))
-			.innerJoin(label, eq(labelNutrient.labelId, label.id))
-			.where(inArray(label.name, ['Calories', 'Carbs', 'Protein', 'Fat']));
+		const getLabels = await prisma.labelNutrient.findMany({
+			select: {
+				nutrient: {
+					select: { fdcNumber: true }
+				}
+			},
+			where: { label: { name: { in: ['Calories', 'Carbs', 'Protein', 'Fat'] } } }
+		});
 
 		const url = encodeURI(
-			`https://api.nal.usda.gov/fdc/v1/food/${encodeURIComponent(fdcId)}?format=abridged&nutrients=${getLabels.map((l) => l.fdcNumber).join(',')}&api_key=${this._apiKey}`
+			`https://api.nal.usda.gov/fdc/v1/food/${encodeURIComponent(fdcId)}?format=abridged&nutrients=${getLabels.map((l) => l.nutrient.fdcNumber).join(',')}&api_key=${this._apiKey}`
 		);
 
 		console.log(`Making request for ${url}...`);

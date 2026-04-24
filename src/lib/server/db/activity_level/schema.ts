@@ -1,15 +1,14 @@
-import { sql, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
-import { datetime, decimal, mysqlTable, serial, text } from 'drizzle-orm/mysql-core';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const activityLevel = mysqlTable('activity_level', {
-	id: serial('id').primaryKey(),
-	name: text('name').notNull().unique(),
-	description: text('description').notNull(),
-    multiplier: decimal('multiplier', { precision: 4, scale: 3 }).$default(() => sql<number>`1`),
-	dateAdded: datetime('date_added')
-		.notNull()
-		.$default(() => new Date())
-});
+export const activityLevel = {
+	select: {
+		id: true,
+		name: true,
+		description: true,
+		mulitplier: true,
+		dateAdded: true
+	}
+}
 
-export type ActivityLevel = InferSelectModel<typeof activityLevel>;
-export type ActivityLevelInput = InferInsertModel<typeof activityLevel>;
+export type ActivityLevel = Prisma.activityLevelGetPayload<typeof activityLevel>;
+export type ActivityLevelInput = Prisma.activityLevelCreateInput;

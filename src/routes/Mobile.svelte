@@ -28,7 +28,7 @@
 	</BriaPage>
 </main>
 
-<footer class="sticky bottom-0 left-0 w-full">
+<footer class="sticky bottom-0 left-0 w-full z-50">
 	<div class="bg-slate-500 text-white p-4">
 		<div class="grid grid-flow-col gap-4 justify-center">
 			{#if user}

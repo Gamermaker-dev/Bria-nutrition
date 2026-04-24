@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { mdiFood } from '@mdi/js';
 	import { Button, DatePickerField } from 'svelte-ux';
 	import FoodDialog from './FoodDrawer.svelte';
-	import { mdiFood } from '@mdi/js';
 	import NutrientTracker from './NutrientTracker.svelte';
 
 	let { data } = $props();
@@ -45,7 +45,7 @@
 	});
 </script>
 
-<FoodDialog bind:open={foodDialogOpen} {mealDate} food={data.meal} />
+<FoodDialog bind:open={foodDialogOpen} {mealDate} meal={data.meal} />
 
 <div class="max-w-screen mx-auto flex flex-col gap-4">
 	<span class="text-xl font-bold">Dashboard</span>

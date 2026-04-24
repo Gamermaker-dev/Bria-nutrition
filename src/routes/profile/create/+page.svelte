@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import PostForm from '$lib/components/PostForm.svelte';
-	import type { ProfileInput } from '$lib/server/db/schema';
+	import { isLoading } from '$lib/stores.js';
 	import {
 		mdiAccountPlus,
 		mdiBabyBottle,
@@ -27,7 +27,14 @@
 		{ label: 'Profile', icon: mdiFaceManProfile, completed: false }
 	];
 
-	let input: Partial<ProfileInput> = $state({});
+	let input: {
+		birthDate?: Date;
+		physicalTypeId?: number;
+		heightFeet?: number;
+		heightInch?: number;
+		weight?: number;
+		activityLevelId?: number;
+	} = $state({});
 	let activityLevels = $derived(data.activityLevels ? data.activityLevels : []);
 	let physicalTypes = $derived(data.physicalTypes ? data.physicalTypes : []);
 
@@ -103,13 +110,13 @@
 			>
 				<div class="grid grid-cols-[auto,1fr]">
 					<Icon
-						path={level.multiplier == '1.200'
+						path={level.multiplier == 1.2
 							? mdiSeat
-							: level.multiplier == '1.375'
+							: level.multiplier == 1.375
 								? mdiWalk
-								: level.multiplier == '1.550'
+								: level.multiplier == 1.55
 									? mdiRun
-									: level.multiplier == '1.725'
+									: level.multiplier == 1.725
 										? mdiRunFast
 										: mdiWeightLifter}
 					/>
@@ -120,7 +127,19 @@
 		{/each}
 	</div>
 
-	<form method="post" id="createProfileForm" action={resolve('/profile/create')} use:enhance>
+	<form
+		method="post"
+		id="createProfileForm"
+		action={resolve('/profile/create')}
+		use:enhance={() => {
+			const timer = setTimeout(() => ($isLoading = true), 100);
+			return async ({ update }) => {
+				await update();
+				clearTimeout(timer);
+				$isLoading = false;
+			};
+		}}
+	>
 		<input type="hidden" name="birthDate" value={input.birthDate} />
 		<input type="hidden" name="physicalType" value={input.physicalTypeId} />
 		<input type="hidden" name="heightInch" value={input.heightInch} />

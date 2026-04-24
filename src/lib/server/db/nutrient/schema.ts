@@ -1,20 +1,18 @@
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { bigint, datetime, int, serial, text } from 'drizzle-orm/mysql-core';
-import { mysqlTable } from 'drizzle-orm/mysql-core/table';
+import type { Prisma } from '../../../../prisma/generated/prisma/client';
 
-export const nutrient = mysqlTable('nutrient', {
-	id: serial('id').primaryKey(),
-	name: text('name').notNull(),
-	unit: text('unit').notNull(),
-	fdcNutrientId: bigint('fdc_nutrient_id', { mode: 'number', unsigned: true }).notNull(),
-	fdcNumber: int('fdc_number').notNull(),
-	dateAdded: datetime('date_added')
-		.notNull()
-		.$defaultFn(() => new Date())
-});
+export const nutrient = {
+	select: {
+		id: true,
+		name: true,
+		unit: true,
+		fdcNutrientId: true,
+		fdcNumber: true,
+		dateAdded: true
+	}
+};
 
-export type Nutrient = InferSelectModel<typeof nutrient>;
-export type NutrientInput = InferInsertModel<typeof nutrient>;
+export type Nutrient = Prisma.nutrientGetPayload<typeof nutrient>;
+export type NutrientInput = Prisma.nutrientCreateInput;
 export interface NutrientWithAmount extends Nutrient {
 	amount: number;
 }

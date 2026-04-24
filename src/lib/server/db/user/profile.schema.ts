@@ -1,57 +1,5 @@
-import {
-	bigint,
-	datetime,
-	decimal,
-	foreignKey,
-	index,
-	int,
-	mysqlTable,
-	serial,
-	varchar
-} from 'drizzle-orm/mysql-core';
-import { user } from '../auth.schema';
-import type { InferInsertModel } from 'drizzle-orm/table';
-import { activityLevel } from '../schema';
-import { SQL, sql } from 'drizzle-orm';
-import { physicalType } from '../physical_type/schema';
+import type { Decimal, DecimalJsLike } from '@prisma/client/runtime/client';
 import type { Prisma } from '../../../../prisma/generated/prisma/client';
-
-export const profile = mysqlTable(
-	'profile',
-	{
-		id: serial('id').primaryKey(),
-		userId: varchar('user_id', { length: 36 })
-			.notNull()
-			.references(() => user.id),
-		birthDate: datetime('birth_date').notNull(),
-		physicalTypeId: bigint('physical_type_id', { mode: 'number', unsigned: true })
-			.notNull()
-			.references(() => physicalType.id),
-		heightInch: int('height_inch').notNull(),
-		heightFeet: int('height_feet').notNull(),
-		weight: decimal('weight', { scale: 1, precision: 4 }).notNull(),
-		activityLevelId: bigint('activityLevelId', { mode: 'number', unsigned: true })
-			.notNull()
-			.references(() => activityLevel.id),
-		age: int('age').generatedAlwaysAs(
-			(): SQL => sql`TIMESTAMPDIFF(YEAR, ${profile.birthDate}, CURDATE())`
-		),
-		nextProfileId: bigint('next_profile_id', { mode: 'number', unsigned: true }),
-		dateAdded: datetime('date_added')
-			.notNull()
-			.$defaultFn(() => new Date()),
-		dateUpdated: datetime('date_updated').$onUpdateFn(() => new Date()),
-		dateDeleted: datetime('date_deleted')
-	},
-	(table) => [
-		foreignKey({
-			name: 'next_profile_foreignKey',
-			columns: [table.nextProfileId],
-			foreignColumns: [table.id]
-		}),
-		index('userId_indx').on(table.userId)
-	]
-);
 
 export const profileWithUser = {
 	select: {
@@ -70,13 +18,28 @@ export const profileWithUser = {
 	}
 };
 export type Profile = Prisma.profileGetPayload<typeof profileWithUser>;
-export type ProfileInput = InferInsertModel<typeof profile>;
+export type ProfileInput = Prisma.profileCreateInput;
+export type _ProfileInput = {
+	id?: number | bigint | undefined;
+	birthDate: string | Date;
+	heightInch: number;
+	heightFeet: number;
+	weight: string | number | Decimal | DecimalJsLike;
+	age?: number | null;
+	nextProfileId?: number | bigint | undefined;
+	activityLevelId: number | bigint;
+	physicalTypeId: number | bigint;
+	userId: string;
+	dateAdded: Date | string;
+	dateUpdated?: Date | string | null;
+	dateDeleted?: Date | string | null;
+};
 export type UserWithProfile = {
 	user: {
 		id: string;
 		email: string;
 	};
-	profile: Prisma.profileSelect | null;
+	profile: Profile | null;
 	physicalType: {
 		id: number;
 		name: string;

@@ -1,86 +1,97 @@
-import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { role, type Role, type RoleInput } from '$lib/server/db/schema';
+import { type Role, type RoleInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
-import type { MySqlRawQueryResult } from 'drizzle-orm/mysql2';
 import { BaseModelController } from '../db/base';
+import { prisma } from '../db/prisma';
 
-export class RoleController extends BaseModelController<typeof role> {
-    constructor(tableName: string, table: typeof role) {
-        super(tableName, table);
-    }
+export class RoleController extends BaseModelController {
+	constructor(tableName: string) {
+		super(tableName);
+	}
 
-    public get = async (): Response<Role[]> => {
-        try {
-            this.setOperation(`get${this.TABLE_NAME}s`);
+	private convertMany = (res: Role[]) => res.map((r) => ({ ...r, id: Number(r.id) }));
+	private convertSingle = (res: Role) => ({
+		...res,
+		id: Number(res.id)
+	});
 
-            const data = await db.select().from(this.TABLE);
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+	public get = async () => {
+		try {
+			this.setOperation(`get${this.TABLE_NAME}s`);
 
-    public getById = async (id: number): Response<Role> => {
-        try {
-            this.setOperation(`get${this.TABLE_NAME}ById`);
-            const data = this.returnOneRecord(
-                await db.select().from(this.TABLE).where(eq(this.TABLE.id, id))
-            );
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+			const data = await prisma.role.findMany().then(this.convertMany);
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
 
-    public getDropdown = async (): Response<{ label: string; value: number }[]> => {
-        try {
-            this.setOperation(`get${this.TABLE_NAME}Dropdown`);
+	public getById = async (id: number) => {
+		try {
+			this.setOperation(`get${this.TABLE_NAME}ById`);
+			const data = await prisma.role
+				.findUniqueOrThrow({
+					where: { id }
+				})
+				.then(this.convertSingle);
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
 
-            const data = await db
-                .select({
-                    label: this.TABLE.name,
-                    value: this.TABLE.id
-                })
-                .from(this.TABLE);
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+	public getDropdown = async (): Response<{ label: string; value: number }[]> => {
+		try {
+			this.setOperation(`get${this.TABLE_NAME}Dropdown`);
 
-    public create = async (input: RoleInput): Response<MySqlRawQueryResult> => {
-        try {
-            this.setOperation(`create${this.TABLE_NAME}`);
-            const data = await db.insert(this.TABLE).values(input);
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+			const data = await prisma.role
+				.findMany()
+				.then((res) => res.map((r) => ({ label: r.name, value: Number(r.id) })));
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
 
-    public update = async (input: RoleInput): Response<MySqlRawQueryResult> => {
-        try {
-            this.setOperation(`update${this.TABLE_NAME}`);
-            const data = await db
-                .update(this.TABLE)
-                .set({
-                    name: input.name,
-                })
-                .where(eq(this.TABLE.id, input.id as number));
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+	public create = async (input: RoleInput) => {
+		try {
+			this.setOperation(`create${this.TABLE_NAME}`);
+			const data = await prisma.role
+				.create({
+					data: input
+				})
+				.then(this.convertSingle);
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
 
-    public delete = async (id: number): Response<MySqlRawQueryResult> => {
-        try {
-            this.setOperation(`delete${this.TABLE_NAME}`);
-            const data = await db.delete(this.TABLE).where(eq(this.TABLE.id, id));
-            return this.success(data);
-        } catch (err) {
-            return this.error(err);
-        }
-    };
+	public update = async (input: RoleInput) => {
+		try {
+			this.setOperation(`update${this.TABLE_NAME}`);
+			const data = await prisma.role
+				.update({
+					data: input,
+					where: { id: input.id }
+				})
+				.then(this.convertSingle);
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
+
+	public delete = async (id: number) => {
+		try {
+			this.setOperation(`delete${this.TABLE_NAME}`);
+			const data = await prisma.role
+				.delete({
+					where: { id }
+				})
+				.then(this.convertSingle);
+			return this.success(data);
+		} catch (err) {
+			return this.error(err);
+		}
+	};
 }

@@ -1,18 +1,15 @@
-import { and, desc, eq, isNull, lte, or, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { profile, profileWithUser, type ProfileInput } from '$lib/server/db/schema';
+import { profileWithUser, type ProfileInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
-import { BaseModelController } from '../db/base';
-import type { MySqlRawQueryResult } from 'drizzle-orm/mysql2';
 import type { Dashboard } from '$lib/types/Dashboard';
-import { error } from '@sveltejs/kit';
-import { formatDate } from '$lib/util';
 import type { HealthReport } from '$lib/types/HealthReport';
+import { formatDate } from '$lib/util';
+import { error } from '@sveltejs/kit';
+import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
 
-export class UserController extends BaseModelController<typeof profile> {
-	constructor(tableName: string, table: typeof profile) {
-		super(tableName, table);
+export class UserController extends BaseModelController {
+	constructor(tableName: string) {
+		super(tableName);
 	}
 
 	public getById = async (id: string) => {
@@ -21,7 +18,13 @@ export class UserController extends BaseModelController<typeof profile> {
 			const data = await prisma.profile.findFirstOrThrow({
 				...profileWithUser,
 				where: { AND: [{ userId: id }, { nextProfileId: null }] }
-			});
+			}).then(res => ({
+				...res,
+				id: Number(res.id),
+				activityLevelId: Number(res.activityLevelId),
+				physicalTypeId: Number(res.physicalTypeId),
+				weight: res.weight.toNumber()
+			}));
 
 			return this.success(data);
 		} catch (err) {
@@ -125,10 +128,10 @@ export class UserController extends BaseModelController<typeof profile> {
 				d.height = d.height.toNumber();
 				d.weight = d.weight.toNumber();
 				d.activityLevelMultiplier = d.activityLevelMultiplier.toNumber();
-			})
+			});
 
 			//@ts-expect-error unknown type
-			return this.success(data.length === 1 ? data[0] as Dashboard : undefined);
+			return this.success(data.length === 1 ? (data[0] as Dashboard) : undefined);
 		} catch (err) {
 			return this.error(err);
 		}
@@ -175,6 +178,7 @@ export class UserController extends BaseModelController<typeof profile> {
 					[report].[userId],
 					[report].[mealDate],
 					[report].[name]
+				order by [report].[mealDate]
 			`;
 
 			return this.success(data);
@@ -183,80 +187,126 @@ export class UserController extends BaseModelController<typeof profile> {
 		}
 	};
 
-	public create = async (input: ProfileInput): Response<MySqlRawQueryResult> => {
+	public create = async (input: ProfileInput) => {
 		try {
 			this.setOperation(`create${this.TABLE_NAME}`);
-			const data = await db.insert(this.TABLE).values(input);
+			const data = await prisma.profile
+				.create({
+					data: {
+						birthDate: input.birthDate,
+						physicalType: { 
+							connect: { id: input.physicalType.connect?.id }
+						},
+						heightFeet: input.heightFeet,
+						heightInch: input.heightInch,
+						weight: input.weight,
+						user: {
+							connect: { 
+								id: input.user.connect?.id 
+							},
+						},
+						activityLevel: {
+							connect: { id: input.activityLevel.connect?.id },
+						},
+						dateAdded: new Date()
+						}
+				})
+				.then((res) => ({
+					...res,
+					id: Number(res.id),
+					nextProfileId: res.nextProfileId ? Number(res.nextProfileId) : null,
+					activityLevelId: Number(res.activityLevelId),
+					physicalTypeId: Number(res.physicalTypeId),
+					weight: res.weight.toNumber()
+				}));
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public update = async (input: ProfileInput): Response<MySqlRawQueryResult> => {
+	public update = async (input: ProfileInput) => {
 		try {
 			this.setOperation(`update${this.TABLE_NAME}`);
-			const data = await db.transaction(async (tx) => {
-				let currDateAdded: string = '';
-				const newDateAdded: string = formatDate(new Date());
-				const curr = await tx
-					.select()
-					.from(this.TABLE)
-					.where(and(eq(this.TABLE.userId, input.userId), isNull(this.TABLE.nextProfileId)));
-				if (curr.length! == 1) {
-					const currProfile = curr[0];
-					currDateAdded = formatDate(currProfile.dateAdded);
-				}
+			const data = await prisma.$transaction(async (tx) => {
+				try {
+					let currDateAdded: string = '';
+					const newDateAdded: string = formatDate(new Date());
+					const curr = await tx.profile.findFirst({
+						where: { AND: [{ userId: input.user.connect?.id }, { nextProfileId: null }] }
+					});
+					if (curr) {
+						currDateAdded = formatDate(curr.dateAdded);
+					}
 
-				if (newDateAdded != currDateAdded) {
-					const newInsert = await tx
-						.insert(this.TABLE)
-						.values({
-							userId: input.userId,
-							birthDate: input.birthDate,
-							physicalTypeId: input.physicalTypeId,
-							heightInch: input.heightInch,
-							heightFeet: input.heightFeet,
-							weight: input.weight,
-							activityLevelId: input.activityLevelId,
-							nextProfileId: null,
-							dateUpdated: null
-						})
-						.$returningId();
-
-					if (newInsert.length > 0) {
-						const updateResults = await tx
-							.update(this.TABLE)
-							.set({
-								nextProfileId: newInsert[0].id,
-								dateUpdated: new Date()
-							})
-							.where(eq(this.TABLE.id, input.id as number));
-
-						if (updateResults[0].affectedRows > 0) {
-							return updateResults;
-						} else tx.rollback();
-					} else tx.rollback();
-				} else {
-					if (input.id) {
-						const updateResults = await tx
-							.update(this.TABLE)
-							.set({
-								id: input.id,
+					if (newDateAdded != currDateAdded) {
+						const newInsert = await tx.profile.create({
+							data: {
+								user: {
+									connect: { id: input.user.connect?.id }
+								},
 								birthDate: input.birthDate,
-								weight: input.weight,
-								heightFeet: input.heightFeet,
+								physicalType: {
+									connect: { id: input.physicalType.connect?.id }
+								},
 								heightInch: input.heightInch,
-								physicalTypeId: input.physicalTypeId,
-								activityLevelId: input.activityLevelId,
-								dateUpdated: new Date()
-							})
-							.where(eq(this.TABLE.id, input.id));
+								heightFeet: input.heightFeet,
+								weight: input.weight,
+								activityLevel: {
+									connect: { id: input.activityLevel.connect?.id }
+								},
+								dateAdded: new Date()
+							}
+						});
 
-						if (updateResults[0].affectedRows > 0) {
-							return updateResults;
-						} else tx.rollback();
-					} else tx.rollback();
+						return await tx.profile
+							.update({
+								data: {
+									nextProfileId: newInsert.id,
+									dateUpdated: new Date()
+								},
+								where: { id: input.id }
+							})
+							.then((res) => ({
+								...res,
+								id: Number(res.id),
+								nextProfileId: res.nextProfileId ? Number(res.nextProfileId) : null,
+								activityLevelId: Number(res.activityLevelId),
+								physicalTypeId: Number(res.physicalTypeId),
+								weight: res.weight.toNumber()
+							}));
+					} else {
+						if (input.id) {
+							return await tx.profile
+								.update({
+									data: {
+										id: input.id,
+										birthDate: input.birthDate,
+										weight: input.weight,
+										heightFeet: input.heightFeet,
+										heightInch: input.heightInch,
+										physicalTypeId: input.physicalType.connect?.id,
+										activityLevelId: input.activityLevel.connect?.id,
+										dateUpdated: new Date()
+									},
+									where: { id: input.id }
+								})
+								.then((res) => ({
+									...res,
+									id: Number(res.id),
+									nextProfileId: res.nextProfileId ? Number(res.nextProfileId) : null,
+									activityLevelId: Number(res.activityLevelId),
+									physicalTypeId: Number(res.physicalTypeId),
+									weight: res.weight.toNumber()
+								}));
+						}
+						console.error(
+							'Transaction error in UpdateProfile',
+							new Error('Update attempted without ID!')
+						);
+					}
+				} catch (err) {
+					console.error('Transaction error in UpdateProfile:', err);
 				}
 			});
 			if (data == null) return this.error('Error occurred in transaction!');
@@ -266,15 +316,22 @@ export class UserController extends BaseModelController<typeof profile> {
 		}
 	};
 
-	public delete = async (id: number): Response<MySqlRawQueryResult> => {
+	public delete = async (id: number) => {
 		try {
 			this.setOperation(`delete${this.TABLE_NAME}`);
-			const data = await db
-				.update(this.TABLE)
-				.set({
-					dateDeleted: new Date()
+			const data = await prisma.profile
+				.update({
+					data: { dateDeleted: new Date() },
+					where: { id }
 				})
-				.where(eq(this.TABLE.id, id));
+				.then((res) => ({
+					...res,
+					id: Number(res.id),
+					nextProfileId: res.nextProfileId ? Number(res.nextProfileId) : null,
+					activityLevelId: Number(res.activityLevelId),
+					physicalTypeId: Number(res.physicalTypeId),
+					weight: res.weight.toNumber()
+				}));
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);

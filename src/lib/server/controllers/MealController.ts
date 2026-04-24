@@ -1,31 +1,37 @@
-import { and, eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { food, meal, mealFood, type Meal } from '$lib/server/db/schema';
-import type { Response } from '$lib/server/Response';
+import { type Meal } from '$lib/server/db/schema';
 import { BaseModelController } from '../db/base';
+import { prisma } from '../db/prisma';
 
-export class MealController extends BaseModelController<typeof meal> {
-	constructor(tableName: string, table: typeof meal) {
-		super(tableName, table);
+export class MealController extends BaseModelController {
+	constructor(tableName: string) {
+		super(tableName);
 	}
 
-	public get = async (): Response<Meal[]> => {
+	private convertMany = (res: Meal[]) => res.map((r) => ({ ...r, id: Number(r.id) }));
+	private convertSingle = (res: Meal) => ({
+		...res,
+		id: Number(res.id)
+	});
+
+	public get = async () => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}s`);
 
-			const data = await db.select().from(this.TABLE);
+			const data = await prisma.meal.findMany().then(this.convertMany);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public getById = async (id: number): Response<Meal> => {
+	public getById = async (id: number) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ById`);
-			const data = this.returnOneRecord(
-				await db.select().from(this.TABLE).where(eq(this.TABLE.id, id))
-			);
+			const data = await prisma.meal
+				.findUniqueOrThrow({
+					where: { id }
+				})
+				.then(this.convertSingle);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
@@ -35,18 +41,31 @@ export class MealController extends BaseModelController<typeof meal> {
 	public getMealForDateByUser = async (userId: string, mealDate: Date) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ForDateByUser`);
-			const data = await db
-				.select({
-					mealId: meal.id,
-					mealDate: meal.mealDate,
-					foodId: food.id,
-					foodName: food.name,
-					amount: mealFood.amount
+			const data = await prisma.meal
+				.findFirst({
+					select: {
+						id: true,
+						mealDate: true,
+						mealFood: { select: { food: { select: { id: true, name: true } }, amount: true } }
+					},
+					where: {
+						AND: [{ userId, mealDate: mealDate }]
+					}
 				})
-				.from(this.TABLE)
-				.innerJoin(mealFood, eq(this.TABLE.id, mealFood.mealId))
-				.innerJoin(food, eq(mealFood.foodId, food.id))
-				.where(and(eq(this.TABLE.userId, userId), eq(this.TABLE.mealDate, mealDate)));
+				.then((res) => {
+					if (res != null)
+						return {
+							mealId: Number(res.id),
+							mealDate: res.mealDate,
+							mealFood: res.mealFood.map((m) => ({
+								foodId: Number(m.food.id),
+								foodName: m.food.name,
+								amount: m.amount
+							}))
+						};
+
+					return undefined;
+				});
 
 			return this.success(data);
 		} catch (err) {

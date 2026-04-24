@@ -1,13 +1,9 @@
-import type { AnyMySqlTable } from 'drizzle-orm/mysql-core';
-
-export class BaseModelController<T extends AnyMySqlTable> {
+export class BaseModelController {
 	protected TABLE_NAME: string;
-	protected TABLE: T;
 	protected operation: string = '';
 
-	constructor(tableName: string, table: T) {
+	constructor(tableName: string) {
 		this.TABLE_NAME = tableName;
-		this.TABLE = table;
 	}
 
 	protected setOperation = (operation: string) => {

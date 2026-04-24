@@ -1,11 +1,11 @@
+import { GOOGLE_GEMINI } from '$env/static/private';
+import { foodController } from '$lib/server/controllers';
+import type { FoodInput } from '$lib/server/db/schema';
+import { createActionError } from '$lib/util';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { fail } from '@sveltejs/kit';
 import { createWorker, PSM } from 'tesseract.js';
 import type { Actions } from './$types';
-import type { FoodInput } from '$lib/server/db/schema';
-import { foodController } from '$lib/server/controllers';
-import { createActionError } from '$lib/util';
-import { GOOGLE_GEMINI } from '$env/static/private';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI);
 
@@ -144,7 +144,15 @@ export const actions: Actions = {
 					]
 				};
 
-				await foodController.create(foodInput);
+				const res = await foodController.create(foodInput);
+
+				if (res.status !== 200)
+					return fail(
+						400,
+						createActionError({
+							custom: ['Whoops! Something unexpected happened adding your custom food!']
+						})
+					);
 
 				return { status: 200, message: 'Successfully created food!' };
 			}

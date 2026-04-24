@@ -6,10 +6,9 @@
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
 	import PostForm from '$lib/components/PostForm.svelte';
 	import { isLoading } from '$lib/stores.js';
-	import { formatDate } from '$lib/util.js';
 	import { mdiGoogle, mdiUploadBox } from '@mdi/js';
 	import { untrack } from 'svelte';
-	import { Button, ButtonGroup, TextField, Dialog } from 'svelte-ux';
+	import { Button, ButtonGroup, Dialog, TextField } from 'svelte-ux';
 
 	let { form } = $props();
 
@@ -64,7 +63,7 @@
 				await update();
 				clearTimeout(timer);
 				$isLoading = false;
-			}
+			};
 		}}
 	>
 		<div class="grid gap-4">
@@ -98,11 +97,23 @@
 			>Are you sure you wish to record the information above?</span
 		>
 		<ButtonGroup class="gap-2">
-			<form method="post" action={resolve('/food/custom?/add')} use:enhance>
+			<form
+				method="post"
+				action={resolve('/food/custom?/add')}
+				use:enhance={() => {
+					const timer = setTimeout(() => ($isLoading = true), 100);
+
+					return async ({ update }) => {
+						await update();
+						clearTimeout(timer);
+						$isLoading = false;
+					};
+				}}
+			>
 				<input
 					type="hidden"
 					name="nutritionInput"
-					value={JSON.stringify({ ...infoInput, name, mealDate: formatDate(mealDate), serving })}
+					value={JSON.stringify({ ...infoInput, name, mealDate, serving })}
 				/>
 				<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
 			</form>

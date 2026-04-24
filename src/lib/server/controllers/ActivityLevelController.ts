@@ -1,32 +1,38 @@
-import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { activityLevel, type ActivityLevel, type ActivityLevelInput } from '$lib/server/db/schema';
+import { type ActivityLevelInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
-import type { MySqlRawQueryResult } from 'drizzle-orm/mysql2';
 import { BaseModelController } from '../db/base';
+import { prisma } from '../db/prisma';
 
-export class ActivityLevelController extends BaseModelController<typeof activityLevel> {
-	constructor(tableName: string, table: typeof activityLevel) {
-		super(tableName, table);
+export class ActivityLevelController extends BaseModelController {
+	constructor(tableName: string) {
+		super(tableName);
 	}
 
-	public get = async (): Response<ActivityLevel[]> => {
+	public get = async () => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}s`);
 
-			const data = await db.select().from(this.TABLE);
+			const data = await prisma.activityLevel.findMany().then((res) =>
+				res.map((r) => {
+					return { ...r, id: Number(r.id), multiplier: r.multiplier?.toNumber() };
+				})
+			);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public getById = async (id: number): Response<ActivityLevel> => {
+	public getById = async (id: number) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ById`);
-			const data = this.returnOneRecord(
-				await db.select().from(this.TABLE).where(eq(this.TABLE.id, id))
-			);
+			const data = await prisma.activityLevel
+				.findUniqueOrThrow({
+					where: { id }
+				})
+				.then((res) => {
+					return { ...res, id: Number(res.id), multiplier: res.multiplier?.toNumber() };
+				});
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
@@ -37,49 +43,65 @@ export class ActivityLevelController extends BaseModelController<typeof activity
 		try {
 			this.setOperation(`get${this.TABLE_NAME}Dropdown`);
 
-			const data = await db
-				.select({
-					label: this.TABLE.name,
-					value: this.TABLE.id
-				})
-				.from(this.TABLE);
+			const data = await prisma.activityLevel
+				.findMany()
+				.then((res) => res.map((r) => ({ label: r.name, value: Number(r.id) })));
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public create = async (input: ActivityLevelInput): Response<MySqlRawQueryResult> => {
+	public create = async (input: ActivityLevelInput) => {
 		try {
 			this.setOperation(`create${this.TABLE_NAME}`);
-			const data = await db.insert(this.TABLE).values(input);
+			const data = await prisma
+				.$transaction([
+					prisma.activityLevel.create({
+						data: {
+							name: input.name,
+							description: input.description,
+							multiplier: input.multiplier,
+							dateAdded: new Date()
+						}
+					})
+				])
+				.then((res) =>
+					res.map((r) => ({ ...r, id: Number(r.id), multiplier: r.multiplier?.toNumber() }))
+				);
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public update = async (input: ActivityLevelInput): Response<MySqlRawQueryResult> => {
+	public update = async (input: ActivityLevelInput) => {
 		try {
 			this.setOperation(`update${this.TABLE_NAME}`);
-			const data = await db
-				.update(this.TABLE)
-				.set({
-					name: input.name,
-					multiplier: input.multiplier,
-					description: input.description
+			const data = await prisma.activityLevel
+				.update({
+					data: {
+						name: input.name,
+						description: input.description,
+						multiplier: input.multiplier
+					},
+					where: { id: input.id }
 				})
-				.where(eq(this.TABLE.id, input.id as number));
+				.then((res) => ({ ...res, id: Number(res.id), multiplier: res.multiplier?.toNumber() }));
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);
 		}
 	};
 
-	public delete = async (id: number): Response<MySqlRawQueryResult> => {
+	public delete = async (id: number) => {
 		try {
 			this.setOperation(`delete${this.TABLE_NAME}`);
-			const data = await db.delete(this.TABLE).where(eq(this.TABLE.id, id));
+			const data = await prisma.activityLevel
+				.delete({
+					where: { id }
+				})
+				.then((res) => ({ ...res, id: Number(res.id), multiplier: res.multiplier?.toNumber() }));
 			return this.success(data);
 		} catch (err) {
 			return this.error(err);

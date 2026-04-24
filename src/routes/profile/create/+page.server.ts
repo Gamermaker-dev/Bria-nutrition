@@ -1,14 +1,14 @@
-import type { PageServerLoad, Actions } from './$types';
-import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import {
 	activityLevelController,
 	physicalTypeController,
 	userController
 } from '$lib/server/controllers';
-import { checkForErrors, createActionError } from '$lib/util';
-import { addProfileSchema } from '$lib/server/schemas';
-import z from 'zod';
 import type { ProfileInput } from '$lib/server/db/schema';
+import { addProfileSchema } from '$lib/server/schemas';
+import { checkForErrors, createActionError } from '$lib/util';
+import { fail, isRedirect, redirect } from '@sveltejs/kit';
+import z from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -45,12 +45,12 @@ export const actions: Actions = {
 
 			const input: ProfileInput = {
 				birthDate: results.data.birthDate,
-				physicalTypeId: results.data.physicalTypeId,
+				physicalType: { connect: { id: results.data.physicalTypeId }},
 				heightFeet: results.data.heightFeet,
 				heightInch: results.data.heightInch,
 				weight: results.data.weight,
-				activityLevelId: results.data.activityLevelId,
-				userId: event.locals.user.id,
+				activityLevel: { connect: { id: results.data.activityLevelId }},
+				user: { connect: { id: event.locals.user.id }},
 				dateAdded: new Date(),
 				dateUpdated: null
 			};
