@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import BriaPage from '$lib/components/BriaPage.svelte';
 	import { mdiFood } from '@mdi/js';
 	import { Button, DatePickerField } from 'svelte-ux';
 	import FoodDialog from './FoodDrawer.svelte';
 	import NutrientTracker from './NutrientTracker.svelte';
 
-	let { data } = $props();
+	let { data, form } = $props();
 
 	let recommended: { calories: number; carbs: number; protein: number; fat: number } = $state({
 		calories: 0,
@@ -45,70 +46,74 @@
 	});
 </script>
 
-<FoodDialog bind:open={foodDialogOpen} {mealDate} meal={data.meal} />
+<BriaPage errors={form?.errors} notification={form?.notification}>
+	<FoodDialog bind:open={foodDialogOpen} {mealDate} meal={data.meal} />
 
-<div class="max-w-screen mx-auto flex flex-col gap-4">
-	<span class="text-xl font-bold">Dashboard</span>
+	<div class="max-w-screen mx-auto flex flex-col gap-4">
+		<span class="text-xl font-bold">Dashboard</span>
 
-	<span class="flex flex-row flex-1 mx-auto gap-4">
-		<DatePickerField
-			bind:value={mealDate}
-			stepper
-			on:change={() => {
-				const base = resolve('/');
-				const url = new URL(base, window.location.origin);
-				url.searchParams.set('mealDate', encodeURI(mealDate.toUTCString()));
+		<span class="flex flex-row flex-1 mx-auto gap-4">
+			<DatePickerField
+				bind:value={mealDate}
+				stepper
+				on:change={() => {
+					const base = resolve('/');
+					const url = new URL(base, window.location.origin);
+					url.searchParams.set('mealDate', encodeURI(mealDate.toUTCString()));
 
-				// eslint-disable-next-line svelte/no-navigation-without-resolve
-				goto(url.href, { replaceState: false, keepFocus: true, noScroll: true });
-			}}
-		/>
-
-		<Button class="bg-emerald-500 text-white" icon={mdiFood} onclick={() => (foodDialogOpen = true)}
-			>View Daily Food</Button
-		>
-	</span>
-
-	<div
-		class="flex flex-col flex-1 gap-4 border-4 border-black rounded-sm elevation-10 bg-white mx-auto p-2"
-	>
-		{#if data.dashboard}
-			<NutrientTracker
-				label="CALORIES"
-				actual={data.dashboard.calories}
-				recommended={recommended.calories}
-				stats={stats.calories}
-				width={15}
-				size={200}
+					// eslint-disable-next-line svelte/no-navigation-without-resolve
+					goto(url.href, { replaceState: false, keepFocus: true, noScroll: true });
+				}}
 			/>
-			<span class="flex flex-row mx-auto gap-4">
+
+			<Button
+				class="bg-emerald-500 text-white"
+				icon={mdiFood}
+				onclick={() => (foodDialogOpen = true)}>View Daily Food</Button
+			>
+		</span>
+
+		<div
+			class="flex flex-col flex-1 gap-4 border-4 border-black rounded-sm elevation-10 bg-white mx-auto p-2"
+		>
+			{#if data.dashboard}
 				<NutrientTracker
-					label="CARBS"
-					actual={data.dashboard.carbs}
-					recommended={recommended.carbs}
-					stats={stats.carbs}
-					size={100}
+					label="CALORIES"
+					actual={data.dashboard.calories}
+					recommended={recommended.calories}
+					stats={stats.calories}
 					width={15}
+					size={200}
 				/>
-				<NutrientTracker
-					label="PROTEIN"
-					actual={data.dashboard.protein}
-					recommended={recommended.protein}
-					stats={stats.protein}
-					size={100}
-					width={15}
-				/>
-				<NutrientTracker
-					label="FAT"
-					actual={data.dashboard.fat}
-					recommended={recommended.fat}
-					stats={stats.fat}
-					size={100}
-					width={15}
-				/>
-			</span>
-		{:else}
-			<span class="font-lg font-semibold">No data to display yet!</span>
-		{/if}
+				<span class="flex flex-row mx-auto gap-4">
+					<NutrientTracker
+						label="CARBS"
+						actual={data.dashboard.carbs}
+						recommended={recommended.carbs}
+						stats={stats.carbs}
+						size={100}
+						width={15}
+					/>
+					<NutrientTracker
+						label="PROTEIN"
+						actual={data.dashboard.protein}
+						recommended={recommended.protein}
+						stats={stats.protein}
+						size={100}
+						width={15}
+					/>
+					<NutrientTracker
+						label="FAT"
+						actual={data.dashboard.fat}
+						recommended={recommended.fat}
+						stats={stats.fat}
+						size={100}
+						width={15}
+					/>
+				</span>
+			{:else}
+				<span class="font-lg font-semibold">No data to display yet!</span>
+			{/if}
+		</div>
 	</div>
-</div>
+</BriaPage>

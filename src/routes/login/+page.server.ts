@@ -1,8 +1,9 @@
-import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import type { PageServerLoad } from './$types';
 import { auth } from '$lib/server/auth';
-import { createActionError } from '$lib/util';
+import { emailLoginSchema } from '$lib/server/schemas';
+import { createNotification, parseZErrors } from '$lib/util';
+import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
+import z from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -18,23 +19,31 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	signInEmail: async (event) => {
 		try {
-			const formData = await event.request.formData();
+			const formData = Object.fromEntries(await event.request.formData()) as {
+				email: string;
+				password: string;
+			};
+			const parse = emailLoginSchema.safeParse(formData);
+
+			if (!parse.success) {
+				return fail(400, { errors: parseZErrors(z.treeifyError(parse.error)) });
+			}
 
 			const result = await auth.api.signInEmail({
 				body: {
-					email: formData.get('email')?.toString() ?? '',
-					password: formData.get('password')?.toString() ?? ''
+					email: parse.data.email,
+					password: parse.data.password
 				}
 			});
 
 			if (result.token) {
 				return redirect(302, '/');
 			}
-			return fail(400, { message: 'Social sign-in failed' });
+			return fail(400, { notification: createNotification('Failed to sign-in!', 'danger') });
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error occurred while logging in:', err);
-			throw fail(500, createActionError({ login: ['Please try again later.'] }));
+			return fail(500, { notification: createNotification('Failed to sign-in!', 'danger') });
 		}
 	},
 	signInSocial: async (event) => {
@@ -53,12 +62,12 @@ export const actions: Actions = {
 			if (result.url) {
 				return redirect(302, result.url);
 			}
-			return fail(400, { message: 'Social sign-in failed' });
+			return fail(400, { notification: createNotification('Social sign-in failed', 'danger') });
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			else {
 				console.error('Unexpected error occurred while signing in through social:', err);
-				throw fail(500, createActionError({ login: ['Please try again later.'] }));
+				return fail(500, { notification: createNotification('Failed to sign-in!', 'danger') });
 			}
 		}
 	},
@@ -71,7 +80,9 @@ export const actions: Actions = {
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error occurred signing out:', err);
-			throw fail(500, createActionError({ logout: ['Whoops! Failed to sign-out!'] }));
+			return fail(500, {
+				notification: createNotification('Failed to sign-out!', 'danger')
+			});
 		}
 	}
 };

@@ -1,7 +1,8 @@
-import { betterAuth } from 'better-auth/minimal';
-import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getRequestEvent } from '$app/server';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { betterAuth } from 'better-auth/minimal';
+import { sveltekitCookies } from 'better-auth/svelte-kit';
+import 'dotenv/config';
 import { prisma } from './db/prisma';
 
 export const auth = betterAuth({

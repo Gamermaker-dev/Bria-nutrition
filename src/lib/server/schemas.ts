@@ -1,5 +1,20 @@
 import z from 'zod';
 
+export const emailLoginSchema = z.object({
+	email: z.string().nonempty('Email must be provided!').nonoptional(),
+	password: z.string().nonempty('Password musy be provided!').nonoptional()
+});
+
+export const registerSchema = z.object({
+	email: z.string().nonempty('Email must be provided!').nonoptional(),
+	name: z.string().nonoptional(),
+	password: z.string().nonempty('Password musy be provided!').min(8, 'Password must be at least 8 characters!'),
+	confirmPassword: z.string().nonoptional()
+}).refine((data) => data.password === data.confirmPassword, {
+	message: 'Passwords do not match!',
+	path: ['confirmPassword']
+});
+
 export const addProfileSchema = z.object({
 	birthDate: z.date().nonoptional('Birth Date is required!'),
 	heightFeet: z.int().min(1, 'Height must be single digit!').gt(0, 'Invalid value!'),

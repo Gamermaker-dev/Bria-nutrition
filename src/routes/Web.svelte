@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import BriaPage from '$lib/components/BriaPage.svelte';
 	import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 	import type { Snippet } from 'svelte';
 	import { AppBar, Button, Menu, Toggle } from 'svelte-ux';
@@ -60,9 +59,5 @@
 </AppBar>
 
 <main class="grow h-screen relative">
-	<BriaPage>
-		{#snippet body()}
-			{@render children()}
-		{/snippet}
-	</BriaPage>
+	{@render children()}
 </main>

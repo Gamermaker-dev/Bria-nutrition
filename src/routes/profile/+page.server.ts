@@ -1,13 +1,13 @@
-import { error, fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
 import {
 	activityLevelController,
 	physicalTypeController,
 	userController
 } from '$lib/server/controllers';
 import { updateProfileSchema } from '$lib/server/schemas';
+import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
+import { error, fail } from '@sveltejs/kit';
 import z from 'zod';
-import { checkForErrors, createActionError } from '$lib/util';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -41,27 +41,31 @@ export const actions: Actions = {
 			const result = updateProfileSchema.safeParse(rawInput);
 
 			if (!result.success) {
-				const errors = z.treeifyError(result.error);
-				return fail(400, { errors, data: formData });
+				return fail(400, { errors: parseZErrors(z.treeifyError(result.error)), data: formData });
 			}
 
 			const res = await userController.update({
 				...result.data,
-				user: { connect: { id: event.locals.user?.id ?? '' }},
-				physicalType: { connect: { id: result.data.physicalTypeId }},
-				activityLevel: { connect: { id: result.data.activityLevelId }},
+				user: { connect: { id: event.locals.user?.id ?? '' } },
+				physicalType: { connect: { id: result.data.physicalTypeId } },
+				activityLevel: { connect: { id: result.data.activityLevelId } },
 				dateAdded: new Date()
 			});
-			
+
 			if (res.status !== 200) {
 				console.error('Failed to update profile:', res.message);
-				return fail(400, createActionError({ update: ['Failed to update profile!'] }));
+				return fail(400, {
+					notification: createNotification('Failed to update profile!', 'danger')
+				});
 			}
 
-			return { status: 200, message: 'Successfully updated profile!' };
+			return {
+				status: 200,
+				notification: createNotification('Successfully updated profile!', 'success')
+			};
 		} catch (err) {
 			console.error('Unexpected error:', err);
-			throw fail(500, createActionError({ update: ['Failed to update profile!'] }));
+			return fail(500, { notification: createNotification('Failed to update profile!', 'danger') });
 		}
 	}
 };

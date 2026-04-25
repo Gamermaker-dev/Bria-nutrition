@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { foodController } from '$lib/server/controllers';
 import type { FoodInput } from '$lib/server/db/schema';
-import { createActionError } from '$lib/util';
+import { createNotification } from '$lib/util';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { fail } from '@sveltejs/kit';
 import { createWorker, PSM } from 'tesseract.js';
@@ -16,7 +16,7 @@ export const actions: Actions = {
 
 		// 1. Validation
 		if (!image || image.size === 0) {
-			return fail(400, { error: 'No image uploaded' });
+			return fail(400, { errors: ['No image uploaded'] });
 		}
 
 		// 2. Convert File to Buffer
@@ -46,17 +46,21 @@ export const actions: Actions = {
 				rawText: text // Useful for debugging
 			};
 
-			return { status: 200, nutritionData };
+			return {
+				status: 202,
+				notification: createNotification('Successfully parsed label!', 'success'),
+				nutritionData
+			};
 		} catch (err) {
 			console.error('OCR Error:', err);
-			return fail(500, createActionError({ scan: ['Failed to process image'] }));
+			return fail(500, { notification: createNotification('Failed to process image', 'danger') });
 		}
 	},
 	gemini: async (event) => {
 		const data = await event.request.formData();
 		const image = data.get('label') as File;
 
-		if (!image) return fail(400, createActionError({ error: ['No image uploaded'] }));
+		if (!image) return fail(400, { errors: ['No image uploaded'] });
 
 		// Convert File to bytes
 		const imageBytes = new Uint8Array(await image.arrayBuffer());
@@ -106,13 +110,19 @@ export const actions: Actions = {
 					fat: 'Not found'
 				};
 			}
-			return { status: 200, nutritionData };
+			return {
+				status: 202,
+				notification: createNotification('Successfully read label using Gemini!', 'success'),
+				nutritionData
+			};
 		} catch (err) {
 			console.error('Error with Google Gemini:', err);
-			return fail(
-				400,
-				createActionError({ gemini: ['Google Gemini is not available. Please try again later.'] })
-			);
+			return fail(400, {
+				notification: createNotification(
+					'Google Gemini is not available. Please try again later.',
+					'danger'
+				)
+			});
 		}
 	},
 	add: async (event) => {
@@ -147,18 +157,21 @@ export const actions: Actions = {
 				const res = await foodController.create(foodInput);
 
 				if (res.status !== 200)
-					return fail(
-						400,
-						createActionError({
-							custom: ['Whoops! Something unexpected happened adding your custom food!']
-						})
-					);
+					return fail(400, {
+						notification: createNotification(
+							'Whoops! Something unexpected happened adding your custom food!',
+							'danger'
+						)
+					});
 
-				return { status: 200, message: 'Successfully created food!' };
+				return {
+					status: 200,
+					notification: createNotification('Successfully created food!', 'success')
+				};
 			}
 		} catch (err) {
 			console.error('Error adding food:', err);
-			return fail(500, createActionError({ add: ['Failed to add food!'] }));
+			return fail(500, { notification: createNotification('Failed to add food!', 'danger') });
 		}
 	}
 };

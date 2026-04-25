@@ -14,7 +14,13 @@ export class ActivityLevelController extends BaseModelController {
 
 			const data = await prisma.activityLevel.findMany().then((res) =>
 				res.map((r) => {
-					return { ...r, id: Number(r.id), multiplier: r.multiplier?.toNumber() };
+					return {
+						id: Number(r.id),
+						name: r.name,
+						description: r.description,
+						multiplier: r.multiplier?.toNumber(),
+						dateAdded: r.dateAdded
+					};
 				})
 			);
 			return this.success(data);

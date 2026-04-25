@@ -1,7 +1,8 @@
 import { type Food, type FoodInput } from '$lib/server/db/schema';
-import type { PrismaClientKnownRequestError } from '../../../prisma/generated/prisma/internal/prismaNamespace';
+import { PrismaClientKnownRequestError } from '../../../prisma/generated/prisma/internal/prismaNamespace';
 import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
+import { CustomFoodError } from '../errors';
 
 export class FoodController extends BaseModelController {
 	constructor(tableName: string) {
@@ -175,6 +176,8 @@ export class FoodController extends BaseModelController {
 				}
 
 				try {
+					if (input.id == undefined && input.fdcId === 0)
+						throw new CustomFoodError('New food!', 'C1000');
 					const whereCondition = input.id != undefined ? { id: input.id } : { fdcId: input.fdcId };
 					const existingFood = await tx.food
 						.findFirstOrThrow({
@@ -185,8 +188,8 @@ export class FoodController extends BaseModelController {
 					foodId = existingFood.id;
 				} catch (err) {
 					if (
-						(err as PrismaClientKnownRequestError)?.code != null &&
-						(err as PrismaClientKnownRequestError).code === 'P2025'
+						(err instanceof PrismaClientKnownRequestError && err.code === 'P2025') ||
+						(err instanceof CustomFoodError && err.code === 'C1000')
 					) {
 						const newFood = await tx.food
 							.create({

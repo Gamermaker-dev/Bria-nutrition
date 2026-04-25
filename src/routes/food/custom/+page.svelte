@@ -2,9 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import BriaPage from '$lib/components/BriaPage.svelte';
 	import Container from '$lib/components/Container.svelte';
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
-	import PostForm from '$lib/components/PostForm.svelte';
 	import { isLoading } from '$lib/stores.js';
 	import { mdiGoogle, mdiUploadBox } from '@mdi/js';
 	import { untrack } from 'svelte';
@@ -40,7 +40,7 @@
 			});
 		}
 
-		if (form?.status === 200 && form.message != null) {
+		if (form?.status === 200) {
 			goto(resolve('/'));
 		} else if (form?.status !== 200) {
 			open = false;
@@ -50,80 +50,80 @@
 	let open = $state(false);
 </script>
 
-<Dialog bind:open>
-	<div slot="title">Upload Nutrition Label</div>
-	<form
-		method="post"
-		action={resolve('/food/custom?/scan')}
-		enctype="multipart/form-data"
-		use:enhance={() => {
-			const timer = setTimeout(() => ($isLoading = true), 100);
+<BriaPage errors={form?.errors} notification={form?.notification}>
+	<Dialog bind:open>
+		<div slot="title">Upload Nutrition Label</div>
+		<form
+			method="post"
+			action={resolve('/food/custom?/scan')}
+			enctype="multipart/form-data"
+			use:enhance={() => {
+				const timer = setTimeout(() => ($isLoading = true), 100);
 
-			return async ({ update }) => {
-				await update();
-				clearTimeout(timer);
-				$isLoading = false;
-			};
-		}}
-	>
-		<div class="grid gap-4">
-			<input type="file" name="label" accept=".png,.jpeg" />
-			<ButtonGroup rounded class="gap-4">
-				<Button class="bg-primary text-white" icon={mdiUploadBox} type="submit">Upload</Button>
+				return async ({ update }) => {
+					await update();
+					clearTimeout(timer);
+					$isLoading = false;
+				};
+			}}
+		>
+			<div class="grid gap-4">
+				<input type="file" name="label" accept=".png,.jpeg" />
+				<ButtonGroup rounded class="gap-4">
+					<Button class="bg-primary text-white" icon={mdiUploadBox} type="submit">Upload</Button>
+					<Button
+						class="bg-blue-500 text-white"
+						icon={mdiGoogle}
+						type="submit"
+						formaction={resolve('/food/custom?/gemini')}>Try Gemini *</Button
+					>
+				</ButtonGroup>
+				<span class="text-xs italic"
+					>* AI can make mistakes. Please verify results. By using this, your image will uploaded to
+					Google Gemini and used to train their model.</span
+				>
+			</div>
+		</form>
+	</Dialog>
+
+	<div class="flex flex-col gap-4 max-w-xl mx-auto">
+		<h1 class="text-lg font-bold">Create Custom Food</h1>
+		<Container>
+			<TextField label="Name" bind:value={name} />
+			<NutritionForm bind:info={infoInput} bind:serving bind:mealDate />
+
+			<span class="col-span-4 font-extrabold"
+				>Are you sure you wish to record the information above?</span
+			>
+			<ButtonGroup class="gap-2">
+				<form
+					method="post"
+					action={resolve('/food/custom?/add')}
+					use:enhance={() => {
+						const timer = setTimeout(() => ($isLoading = true), 100);
+
+						return async ({ update }) => {
+							await update();
+							clearTimeout(timer);
+							$isLoading = false;
+						};
+					}}
+				>
+					<input
+						type="hidden"
+						name="nutritionInput"
+						value={JSON.stringify({ ...infoInput, name, mealDate, serving })}
+					/>
+					<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
+				</form>
+				<Button type="button" class="bg-red-500 text-white" href={resolve('/food')}>Cancel</Button>
 				<Button
+					type="button"
 					class="bg-blue-500 text-white"
-					icon={mdiGoogle}
-					type="submit"
-					formaction={resolve('/food/custom?/gemini')}>Try Gemini *</Button
+					icon={mdiUploadBox}
+					on:click={() => (open = true)}>Upload</Button
 				>
 			</ButtonGroup>
-			<span class="text-xs italic"
-				>* AI can make mistakes. Please verify results. By using this, your image will uploaded to
-				Google Gemini and used to train their model.</span
-			>
-		</div>
-	</form>
-</Dialog>
-
-<PostForm {form} />
-
-<div class="flex flex-col gap-4 max-w-xl mx-auto">
-	<h1 class="text-lg font-bold">Create Custom Food</h1>
-	<Container>
-		<TextField label="Name" bind:value={name} />
-		<NutritionForm bind:info={infoInput} bind:serving bind:mealDate />
-
-		<span class="col-span-4 font-extrabold"
-			>Are you sure you wish to record the information above?</span
-		>
-		<ButtonGroup class="gap-2">
-			<form
-				method="post"
-				action={resolve('/food/custom?/add')}
-				use:enhance={() => {
-					const timer = setTimeout(() => ($isLoading = true), 100);
-
-					return async ({ update }) => {
-						await update();
-						clearTimeout(timer);
-						$isLoading = false;
-					};
-				}}
-			>
-				<input
-					type="hidden"
-					name="nutritionInput"
-					value={JSON.stringify({ ...infoInput, name, mealDate, serving })}
-				/>
-				<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
-			</form>
-			<Button type="button" class="bg-red-500 text-white" href={resolve('/food')}>Cancel</Button>
-			<Button
-				type="button"
-				class="bg-blue-500 text-white"
-				icon={mdiUploadBox}
-				on:click={() => (open = true)}>Upload</Button
-			>
-		</ButtonGroup>
-	</Container>
-</div>
+		</Container>
+	</div>
+</BriaPage>

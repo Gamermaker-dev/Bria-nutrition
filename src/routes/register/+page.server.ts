@@ -1,8 +1,9 @@
-import { fail, isRedirect, redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import type { PageServerLoad } from './$types';
 import { auth } from '$lib/server/auth';
-import { createActionError } from '$lib/util';
+import { registerSchema } from '$lib/server/schemas';
+import { createNotification, parseZErrors } from '$lib/util';
+import { fail, isRedirect, redirect } from '@sveltejs/kit';
+import z from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -18,24 +19,34 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	signUp: async (event) => {
 		try {
-			const formData = await event.request.formData();
+			const formData = Object.fromEntries(await event.request.formData()) as {
+				email: string;
+				name: string;
+				password: string;
+				confirmPassword: string;
+			};
+			const parse = registerSchema.safeParse(formData);
+
+			if (!parse.success) {
+				return fail(400, { errors: parseZErrors(z.treeifyError(parse.error)) });
+			}
 
 			const result = await auth.api.signUpEmail({
 				body: {
-					email: formData.get('email')?.toString() ?? '',
-					password: formData.get('password')?.toString() ?? '',
-					name: formData.get('name')?.toString() ?? ''
+					email: parse.data.email,
+					password: parse.data.password,
+					name: parse.data.name
 				}
 			});
 
 			if (result.token) {
 				return redirect(302, '/');
 			}
-			return fail(400, createActionError({ register: ['Failed to register!'] }));
+			return fail(400, { notification: createNotification('Failed to register!', 'danger') });
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error ocurred while signing up:', err);
-			throw fail(500, createActionError({ register: ['Failed to register!'] }));
+			return fail(500, { notification: createNotification('Failed to register!', 'danger') });
 		}
 	}
 };

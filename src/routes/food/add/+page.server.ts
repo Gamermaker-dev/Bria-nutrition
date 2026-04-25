@@ -2,7 +2,7 @@ import { foodController, nutrientController, usdaApi } from '$lib/server/control
 import type { FoodInput } from '$lib/server/db/schema';
 import { addFoodSchema } from '$lib/server/schemas';
 import type { FoodById } from '$lib/types/usda/FoodById';
-import { checkForErrors, createActionError } from '$lib/util';
+import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
 import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
@@ -68,12 +68,8 @@ export const actions: Actions = {
 			rawInput.mealDate = new Date(rawInput.mealDate);
 			const result = addFoodSchema.safeParse(rawInput);
 
-			console.log(formData.input);
-
 			if (!result.success) {
-				const errors = z.treeifyError(result.error);
-				console.error('Validation error:', errors);
-				return fail(400, { errors, data: formData });
+				return fail(400, { errors: parseZErrors(z.treeifyError(result.error)), data: formData });
 			}
 
 			const id: number | undefined = result.data.id;
@@ -108,16 +104,23 @@ export const actions: Actions = {
 
 			const res = await foodController.create(input);
 			if (res.status !== 200)
-				return fail(
-					400,
-					createActionError({ add: ['Whoops! Something went wrong adding this to your meal!'] })
-				);
+				return fail(400, {
+					notification: createNotification(
+						'Whoops! Something went wrong adding this to your meal!',
+						'danger'
+					)
+				});
 
-			return { status: 200, message: 'Successfully added food!' };
+			return {
+				status: 200,
+				notification: createNotification('Successfully added food!', 'success')
+			};
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Error occurred adding food:', err);
-			return fail(500, createActionError({ add: ['Unexpected error occurred!'] }));
+			return fail(500, {
+				notification: createNotification('Unexpected error occurred!', 'danger')
+			});
 		}
 	}
 };

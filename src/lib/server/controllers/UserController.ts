@@ -2,7 +2,7 @@ import { profileWithUser, type ProfileInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
 import type { Dashboard } from '$lib/types/Dashboard';
 import type { HealthReport } from '$lib/types/HealthReport';
-import { formatDate } from '$lib/util';
+import { calculateAge, formatDate } from '$lib/util';
 import { error } from '@sveltejs/kit';
 import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
@@ -15,16 +15,18 @@ export class UserController extends BaseModelController {
 	public getById = async (id: string) => {
 		try {
 			this.setOperation(`get${this.TABLE_NAME}ById`);
-			const data = await prisma.profile.findFirstOrThrow({
-				...profileWithUser,
-				where: { AND: [{ userId: id }, { nextProfileId: null }] }
-			}).then(res => ({
-				...res,
-				id: Number(res.id),
-				activityLevelId: Number(res.activityLevelId),
-				physicalTypeId: Number(res.physicalTypeId),
-				weight: res.weight.toNumber()
-			}));
+			const data = await prisma.profile
+				.findFirstOrThrow({
+					...profileWithUser,
+					where: { AND: [{ userId: id }, { nextProfileId: null }] }
+				})
+				.then((res) => ({
+					...res,
+					id: Number(res.id),
+					activityLevelId: Number(res.activityLevelId),
+					physicalTypeId: Number(res.physicalTypeId),
+					weight: res.weight.toNumber()
+				}));
 
 			return this.success(data);
 		} catch (err) {
@@ -36,24 +38,25 @@ export class UserController extends BaseModelController {
 		try {
 			this.setOperation('getDashboard');
 
-			const profiles = await prisma.profile.findMany({
-				where: {
-					AND: [
-						{ userId: userId },
-						{
-							OR: [
-								{ nextProfileId: null },
-								{
-									dateUpdated: {
-										gt: mealDate
-									}
-								}
-							]
-						}
-					]
-				},
-				orderBy: { dateAdded: 'desc' }
-			});
+			const profiles = await prisma.$queryRaw<
+				{
+					id: bigint;
+					dateAdded: Date;
+				}[]
+			>`
+			    SELECT
+					[dbo].[profile].[id],
+					[dbo].[profile].[dateAdded]
+				FROM
+					[dbo].[profile]
+				WHERE
+					[dbo].[profile].[userId] = ${userId}
+					AND (nextProfileId IS NULL OR
+					(CAST(dateAdded AS Date) <= ${mealDate}
+					AND CAST(dateUpdated AS Date) > ${mealDate}))
+				ORDER BY
+					[dbo].[profile].[dateAdded]
+			`.then((res) => res.map((r) => ({ ...r, id: Number(r.id) })));
 
 			let profileToUse =
 				profiles.length === 1
@@ -194,22 +197,22 @@ export class UserController extends BaseModelController {
 				.create({
 					data: {
 						birthDate: input.birthDate,
-						physicalType: { 
+						physicalType: {
 							connect: { id: input.physicalType.connect?.id }
 						},
 						heightFeet: input.heightFeet,
 						heightInch: input.heightInch,
 						weight: input.weight,
 						user: {
-							connect: { 
-								id: input.user.connect?.id 
-							},
+							connect: {
+								id: input.user.connect?.id
+							}
 						},
 						activityLevel: {
-							connect: { id: input.activityLevel.connect?.id },
+							connect: { id: input.activityLevel.connect?.id }
 						},
 						dateAdded: new Date()
-						}
+					}
 				})
 				.then((res) => ({
 					...res,
@@ -246,6 +249,7 @@ export class UserController extends BaseModelController {
 									connect: { id: input.user.connect?.id }
 								},
 								birthDate: input.birthDate,
+								age: calculateAge(input.birthDate),
 								physicalType: {
 									connect: { id: input.physicalType.connect?.id }
 								},
@@ -280,8 +284,8 @@ export class UserController extends BaseModelController {
 							return await tx.profile
 								.update({
 									data: {
-										id: input.id,
 										birthDate: input.birthDate,
+										age: calculateAge(input.birthDate),
 										weight: input.weight,
 										heightFeet: input.heightFeet,
 										heightInch: input.heightInch,

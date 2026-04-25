@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import BriaPage from '$lib/components/BriaPage.svelte';
 	import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 	import type { Snippet } from 'svelte';
 	import { Button, Menu, Toggle } from 'svelte-ux';
@@ -21,11 +20,7 @@
 <header class="bg-primary-400 text-white p-4">BRIA</header>
 
 <main class="grow h-screen relative">
-	<BriaPage>
-		{#snippet body()}
-			{@render children()}
-		{/snippet}
-	</BriaPage>
+	{@render children()}
 </main>
 
 <footer class="sticky bottom-0 left-0 w-full z-50">

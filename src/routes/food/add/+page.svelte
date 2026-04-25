@@ -2,9 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import BriaPage from '$lib/components/BriaPage.svelte';
 	import Container from '$lib/components/Container.svelte';
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
-	import PostForm from '$lib/components/PostForm.svelte';
 	import { isLoading } from '$lib/stores.js';
 	import { Button, ButtonGroup } from 'svelte-ux';
 
@@ -35,45 +35,52 @@
 	});
 
 	$effect(() => {
-		if (form?.message != undefined && form.status === 200) goto(resolve('/'));
+		if (form?.status === 200) goto(resolve('/'));
 	});
 </script>
 
-<div class="max-w-xl mx-auto flex flex-col gap-4 p-2">
-	<PostForm {form} />
+<BriaPage errors={form?.errors} notification={form?.notification}>
+	<div class="max-w-xl mx-auto flex flex-col gap-4 p-2">
+		<span class="text-xl font-bold">Add Food</span>
+		<Container>
+			<NutritionForm info={{ calories, carbs, protein, fat }} bind:serving bind:mealDate readonly />
 
-	<span class="text-xl font-bold">Add Food</span>
-	<Container>
-		<NutritionForm info={{ calories, carbs, protein, fat }} bind:serving bind:mealDate readonly />
+			<span class="col-span-4 font-extrabold"
+				>Are you sure you wish to record the information above?</span
+			>
+			<ButtonGroup class="gap-2">
+				<form
+					method="post"
+					action={resolve('/food/add')}
+					use:enhance={() => {
+						const timer = setTimeout(() => ($isLoading = true), 100);
 
-		<span class="col-span-4 font-extrabold"
-			>Are you sure you wish to record the information above?</span
-		>
-		<ButtonGroup class="gap-2">
-			<form method="post" action={resolve('/food/add')} use:enhance={() => {
-				const timer = setTimeout(() => ($isLoading = true), 100);
-
-				return async ({ update }) => {
-					await update();
-					clearTimeout(timer);
-					$isLoading = false;
-				}
-			}}>
-				<input
-					type="hidden"
-					name="input"
-					value={JSON.stringify({
-						id: type === 'custom' ? data.food.customId : undefined,
-						fdcId: type === 'fdc' ? data.food.fdcId : 0,
-						mealDate,
-						serving: `${serving}`,
-						name: data.food.description,
-						nutrients: data.food.foodNutrients.map((n) => ({ number: n.number, amount: n.amount }))
-					})}
-				/>
-				<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
-			</form>
-			<Button type="button" class="bg-red-500 text-white" href={resolve('/food')}>Cancel</Button>
-		</ButtonGroup>
-	</Container>
-</div>
+						return async ({ update }) => {
+							await update();
+							clearTimeout(timer);
+							$isLoading = false;
+						};
+					}}
+				>
+					<input
+						type="hidden"
+						name="input"
+						value={JSON.stringify({
+							id: type === 'custom' ? data.food.customId : undefined,
+							fdcId: type === 'fdc' ? data.food.fdcId : 0,
+							mealDate,
+							serving: `${serving}`,
+							name: data.food.description,
+							nutrients: data.food.foodNutrients.map((n) => ({
+								number: n.number,
+								amount: n.amount
+							}))
+						})}
+					/>
+					<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
+				</form>
+				<Button type="button" class="bg-red-500 text-white" href={resolve('/food')}>Cancel</Button>
+			</ButtonGroup>
+		</Container>
+	</div>
+</BriaPage>

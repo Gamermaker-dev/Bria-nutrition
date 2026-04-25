@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import favicon from '$lib/assets/favicon.svg';
-	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
+	import BriaNotification from '$lib/components/BriaNotification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import { displayError, isLoading } from '$lib/stores';
 	import { untrack, type Snippet } from 'svelte';
@@ -65,8 +65,6 @@
 	<Loading />
 {/if}
 
-<ErrorBanner />
-
 <div class="flex flex-col min-h-screen relative">
 	{#if data.isMobile}
 		<Mobile user={data.user} navbar={data.navbar}>
@@ -78,3 +76,5 @@
 		</Web>
 	{/if}
 </div>
+
+<BriaNotification />

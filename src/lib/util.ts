@@ -16,18 +16,40 @@ const formatDate = (val: Date | string, format?: 'date' | 'month' | 'year') => {
 			: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 };
 
-const createActionError = (props: { [key: string]: string[] }) => {
-	const error = {
-		errors: {
-			errors: Object.values(props).flat(),
-			properties: {}
-		} as { errors: string[]; properties: { [key: string]: { errors: string[] } } }
-	};
-	Object.entries(props).forEach((p) => {
-		error.errors.properties[`${p[0]}`] = { errors: p[1] };
-	});
-	console.log(error);
-	return error;
+const parseZErrors = (errors: {
+	errors: string[];
+	properties?: { [key: string]: { errors: string[] } | undefined };
+}) => {
+	const _errors = [...errors.errors];
+
+	if (errors.properties) {
+		Object.entries(errors.properties).forEach((kv) => {
+			const val = kv[1];
+			if (val) val.errors.forEach((e) => _errors.push(e));
+		});
+	}
+	return _errors;
 };
 
-export { checkForErrors, formatDate, createActionError };
+const createNotification = (text: string, type: 'success' | 'warning' | 'danger') => {
+	return { title: type.toUpperCase(), description: text, type };
+};
+
+const calculateAge = (birth: Date | string) => {
+	const today = new Date();
+	if (typeof birth === 'string') {
+		birth = new Date(birth);
+	}
+
+	let age = today.getFullYear() - birth.getFullYear();
+	const monthDiff = today.getMonth() - birth.getMonth();
+
+	// Check if the birthday has occurred yet this year
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+		age--;
+	}
+
+	return age;
+};
+
+export { calculateAge, checkForErrors, createNotification, formatDate, parseZErrors };

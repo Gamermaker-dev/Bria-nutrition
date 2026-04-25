@@ -1,7 +1,8 @@
 import { writable } from 'svelte/store';
+import type { BriaNotification } from './types/BriaNotification';
 
 export const notifications = writable<
-	{ type: 'success' | 'warning' | 'danger'; title: string; description: string }[]
+	BriaNotification[]
 >([]);
 
 export const displayError = writable<boolean>(false);

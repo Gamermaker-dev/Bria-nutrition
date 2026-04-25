@@ -1,10 +1,10 @@
 import { foodController, mealController, userController } from '$lib/server/controllers';
-import { error, fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { isDate } from 'util/types';
-import { checkForErrors, createActionError } from '$lib/util';
 import { deleteFoodSchema } from '$lib/server/schemas';
+import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
+import { error, fail } from '@sveltejs/kit';
+import { isDate } from 'util/types';
 import z from 'zod';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -42,21 +42,27 @@ export const actions: Actions = {
 			const result = deleteFoodSchema.safeParse(rawInput);
 
 			if (!result.success) {
-				const errors = z.treeifyError(result.error);
-				return fail(400, { errors, data: formData })
+				return fail(400, { errors: parseZErrors(z.treeifyError(result.error)), data: formData });
 			}
 
 			const res = await foodController.delete(result.data.id, result.data.mealId);
 
 			if (res.status !== 200) {
 				console.error('Failed to delete food!', res.message);
-				return fail(400, createActionError({ delete: ['Failed to delete food from meal!']}))
+				return fail(400, {
+					notification: createNotification('Failed to delete food from meal!', 'danger')
+				});
 			}
 
-			return { status: 200, message: 'Successfully deleted food!' };
-		} catch (err: unknown) {
-			console.error(`${err}`);
-			throw fail(500, createActionError({ delete: ['Failed to delete food!'] }));
+			return {
+				status: 200,
+				notification: createNotification('Successfully deleted food!', 'success')
+			};
+		} catch (err) {
+			console.error('Failed to delete food from meal:', err);
+			return fail(500, {
+				notification: createNotification('Failed to delete food from meal!', 'danger')
+			});
 		}
 	}
 };
