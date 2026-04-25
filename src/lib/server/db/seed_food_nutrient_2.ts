@@ -1,20 +1,21 @@
-import { eq } from 'drizzle-orm';
-import { db } from '.';
-import { fdcNutrient, food, foodNutrient, nutrient } from './schema';
 import { exit } from 'node:process';
+import { prisma } from './prisma';
 
 const main = async () => {
-	const res = await db
-		.insert(foodNutrient)
-		.select(
-			db
-				.select({ foodId: food.id, nutrientId: nutrient.id, amount: fdcNutrient.amount })
-				.from(fdcNutrient)
-				.innerJoin(food, eq(fdcNutrient.fdcId, food.fdcId))
-				.innerJoin(nutrient, eq(fdcNutrient.nutrientId, nutrient.fdcNutrientId))
-		);
-	if (res[0].affectedRows > 0) {
-		console.log(`Successfully inserted ${res[0].affectedRows} rows!`);
+	const fdc = await prisma.$queryRaw<{ foodId: bigint; nutrientId: bigint; amount: number }[]>`
+		SELECT f.id, n.id, fdc.amount
+		FROM fdcNutrient fdc
+		JOIN food f ON fdc.fdcId = f.fdcId
+		JOIN nutrient n ON fdc.nutrientId = n.fdcNutrientId
+	`.then((res) =>
+		res.map((r) => ({ ...r, foodId: Number(r.foodId), nutrientId: Number(r.nutrientId) }))
+	);
+	const res = await prisma.foodNutrient.createMany({
+		data: fdc
+	});
+
+	if (res.count > 0) {
+		console.log(`Successfully inserted ${res.count} rows!`);
 	} else {
 		console.error('Failed to insert rows!');
 	}

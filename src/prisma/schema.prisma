@@ -104,13 +104,13 @@ model meal {
 }
 
 model mealFood {
+  id     BigInt @id @default(autoincrement())
   mealId BigInt @db.BigInt
   foodId BigInt @db.BigInt
   amount  Float  @db.Float
   food    food   @relation(fields: [foodId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "mealFoodFoodIdFoodIdFk")
   meal    meal   @relation(fields: [mealId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "mealFoodMealIdMealIdFk")
 
-  @@id([mealId, foodId])
   @@index([mealId], map: "mealIdIndx")
   @@index([foodId], map: "mealFoodFoodIdFoodIdFk")
 }

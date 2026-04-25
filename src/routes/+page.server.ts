@@ -3,6 +3,8 @@ import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { isDate } from 'util/types';
 import { checkForErrors, createActionError } from '$lib/util';
+import { deleteFoodSchema } from '$lib/server/schemas';
+import z from 'zod';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -35,28 +37,21 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	deleteFoodFromMeal: async (event) => {
 		try {
-			const formData = await event.request.formData();
+			const formData = Object.fromEntries(await event.request.formData()) as { input: string };
+			const rawInput = JSON.parse(formData.input);
+			const result = deleteFoodSchema.safeParse(rawInput);
 
-			let foodId: number = 0;
-			let mealId: number = 0;
-
-			const rawFoodId = formData.get('foodId');
-			console.log(rawFoodId);
-			if (rawFoodId) {
-				foodId = parseInt(rawFoodId.toString(), 10);
-				if (isNaN(foodId))
-					throw fail(400, createActionError({ delete: ['Failed to delete food!'] }));
+			if (!result.success) {
+				const errors = z.treeifyError(result.error);
+				return fail(400, { errors, data: formData })
 			}
 
-			const rawMealId = formData.get('mealId');
-			console.log(rawMealId);
-			if (rawMealId) {
-				mealId = parseInt(rawMealId.toString(), 10);
-				if (isNaN(mealId))
-					throw fail(400, createActionError({ delete: ['Failed to delete food!'] }));
-			}
+			const res = await foodController.delete(result.data.id, result.data.mealId);
 
-			await foodController.delete(foodId, mealId);
+			if (res.status !== 200) {
+				console.error('Failed to delete food!', res.message);
+				return fail(400, createActionError({ delete: ['Failed to delete food from meal!']}))
+			}
 
 			return { status: 200, message: 'Successfully deleted food!' };
 		} catch (err: unknown) {

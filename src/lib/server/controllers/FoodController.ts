@@ -175,9 +175,10 @@ export class FoodController extends BaseModelController {
 				}
 
 				try {
+					const whereCondition = input.id != undefined ? { id: input.id } : { fdcId: input.fdcId };
 					const existingFood = await tx.food
 						.findFirstOrThrow({
-							where: { fdcId: input.fdcId === 0 ? undefined : input.fdcId }
+							where: whereCondition
 						})
 						.then(this.convertSingle);
 
@@ -231,14 +232,14 @@ export class FoodController extends BaseModelController {
 		}
 	};
 
-	public delete = async (foodId: number, mealId: number) => {
+	public delete = async (id: number, mealId: number) => {
 		try {
 			this.setOperation(`delete${this.TABLE_NAME}`);
 			const results = await prisma.$transaction(async (tx) => {
 				try {
-					await tx.mealFood.deleteMany({
+					await tx.mealFood.delete({
 						where: {
-							AND: [{ foodId: foodId }, { mealId: mealId }]
+							id
 						}
 					});
 

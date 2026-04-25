@@ -1,8 +1,7 @@
-import { exit } from 'node:process';
-import fs from 'fs';
 import { parse } from 'csv-parse';
-import { db } from '.';
-import { fdcNutrient } from './schema';
+import fs from 'fs';
+import { exit } from 'node:process';
+import { prisma } from './prisma';
 
 const main = async () => {
 	console.log('Inserting food nutrients...');
@@ -23,7 +22,9 @@ const main = async () => {
 		input.push({ fdcId: row.fdc_id, nutrientId: row.nutrient_id, amount: amount });
 
 		if (input.length >= CHUNK_SIZE) {
-			await db.insert(fdcNutrient).values(input);
+			await prisma.fdcNutrient.createMany({
+				data: input
+			});
 			input.length = 0;
 		}
 	}

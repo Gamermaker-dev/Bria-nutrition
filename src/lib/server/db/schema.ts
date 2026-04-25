@@ -1,5 +1,4 @@
 export * from './activity_level/schema';
-export * from './auth.schema';
 export * from './food/schema';
 export * from './label/schema';
 export * from './meal/schema';

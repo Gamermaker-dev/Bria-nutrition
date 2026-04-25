@@ -39,9 +39,9 @@
 								{nav.text}
 								<Menu matchWidth {open} onclose={toggleOff}>
 									{#each nav.subItems as sub (sub.text)}
-										{#if sub.href !== undefined}
+										{#if sub.href != undefined}
 											<Button onclick={() => goto(resolve(sub.href))}>{sub.text}</Button>
-										{:else if sub.action !== undefined}
+										{:else if sub.action != undefined}
 											<form method="post" action={sub.action} use:enhance>
 												<Button type="submit">{sub.text}</Button>
 											</form>

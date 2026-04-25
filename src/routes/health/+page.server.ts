@@ -17,19 +17,21 @@ export const load: PageServerLoad = async (event) => {
 		};
 
 		const TODAY = new Date();
+		const SEVEN_DAYS_AGO = new Date();
+		SEVEN_DAYS_AGO.setDate(SEVEN_DAYS_AGO.getDate() - 7);
 
 		const startDate =
 			params.startDate != undefined
 				? new Date(params.startDate)
-				: new Date(TODAY.getFullYear() - 1, TODAY.getMonth(), TODAY.getDate());
+				: SEVEN_DAYS_AGO;
 		const endDate =
 			params.endDate != undefined
 				? new Date(params.endDate)
-				: new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+				: TODAY;
 		const groupBy =
 			params.groupBy != undefined && ['year', 'month', 'date'].includes(params.groupBy)
 				? params.groupBy
-				: 'year';
+				: 'date';
 
 		if (!isDate(startDate) || !isDate(endDate)) throw error(400, { message: 'Bad request' });
 

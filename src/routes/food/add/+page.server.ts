@@ -76,6 +76,7 @@ export const actions: Actions = {
 				return fail(400, { errors, data: formData });
 			}
 
+			const id: number | undefined = result.data.id;
 			const mealDate: Date = result.data.mealDate;
 			const serving: number = parseFloat(result.data.serving);
 			const fdcId: number | undefined = result.data.fdcId;
@@ -87,6 +88,7 @@ export const actions: Actions = {
 			const nutrients = await nutrientController.getByFdcIds(numbers.map((n) => n.number));
 
 			const input: FoodInput = {
+				id,
 				userId: event.locals.user.id ?? '',
 				mealDate: mealDate,
 				name: result.data.name,

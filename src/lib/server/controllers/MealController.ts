@@ -46,7 +46,7 @@ export class MealController extends BaseModelController {
 					select: {
 						id: true,
 						mealDate: true,
-						mealFood: { select: { food: { select: { id: true, name: true } }, amount: true } }
+						mealFood: { select: { id: true, food: { select: { id: true, name: true } }, amount: true } }
 					},
 					where: {
 						AND: [{ userId, mealDate: mealDate }]
@@ -58,6 +58,7 @@ export class MealController extends BaseModelController {
 							mealId: Number(res.id),
 							mealDate: res.mealDate,
 							mealFood: res.mealFood.map((m) => ({
+								id: Number(m.id),
 								foodId: Number(m.food.id),
 								foodName: m.food.name,
 								amount: m.amount

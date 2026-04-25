@@ -2,15 +2,13 @@
 
 services:
 
-  db:
-    image: mariadb
+  app:
+    image: gamermaker/bria-nutrition:latest
     restart: always
     ports:
-       - 3306:3306
-    environment:
-      MARIADB_ROOT_PASSWORD: Bxc_26_Nut
-      MARIADB_USER: adkins_admin
-      MARIADB_PASSWORD: CZVa7ZsXrlk1m4znd*JIaYR%
+       - 5173:3000
+    env_file:
+      - .env
 
   # adminer:
   #   image: adminer

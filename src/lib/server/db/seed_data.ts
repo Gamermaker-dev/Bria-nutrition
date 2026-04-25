@@ -1,8 +1,8 @@
 import { parse } from 'csv-parse/sync';
 import { readFile } from 'node:fs/promises';
-import type { NutrientInput } from './schema';
-import { nutrientController } from '../controllers';
 import { exit } from 'node:process';
+import { nutrientController } from '../controllers';
+import type { NutrientInput } from './schema';
 
 type importData = {
 	id: string;
@@ -25,11 +25,13 @@ const main = async () => {
 
 	console.log(records);
 
+	const dateAdded = new Date();
 	const nutrientInput: NutrientInput[] = records.map((r) => ({
 		name: r.name,
 		unit: r.unit_name,
 		fdcNutrientId: isNaN(parseInt(r.id, 10)) ? 0 : parseInt(r.id, 10),
-		fdcNumber: isNaN(parseInt(r.nutrient_nbr, 10)) ? 0 : parseInt(r.nutrient_nbr, 10)
+		fdcNumber: isNaN(parseInt(r.nutrient_nbr, 10)) ? 0 : parseInt(r.nutrient_nbr, 10),
+		dateAdded
 	}));
 
 	if (nutrientInput.length > 0) {
@@ -37,4 +39,6 @@ const main = async () => {
 	}
 };
 
-main().then(() => exit()).catch(() => exit(1));
+main()
+	.then(() => exit())
+	.catch(() => exit(1));

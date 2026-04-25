@@ -13,3 +13,4 @@ export const recommendation = {
 
 export type Recommendation = Prisma.recommendationGetPayload<typeof recommendation>;
 export type RecommendationInput = Prisma.recommendationCreateInput;
+export type RecommendationManyInput = Prisma.recommendationCreateManyInput;

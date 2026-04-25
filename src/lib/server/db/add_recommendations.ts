@@ -1,9 +1,8 @@
 import { parse } from 'csv-parse/sync';
 import { readFile } from 'node:fs/promises';
-import { label, recommendation, type RecommendationInput } from './schema';
 import { exit } from 'node:process';
-import { db } from '.';
-import { eq, sql } from 'drizzle-orm';
+import { prisma } from './prisma';
+import { type RecommendationManyInput } from './schema';
 
 type importData = {
 	Age: string;
@@ -14,11 +13,11 @@ type importData = {
 };
 
 const parseData = async (labelId: number, records: importData[]) => {
-	const inputs: RecommendationInput[] = records.reduce((curr, val) => {
+	const inputs: RecommendationManyInput[] = records.reduce((curr, val) => {
 		let minAge: number = 0;
 		let maxAge: number = 0;
 
-        console.log(`${Object.keys(val)}`)
+		console.log(`${Object.keys(val)}`);
 		const conversion = val.Age.includes('years') ? 12 : 1;
 		const ageString = val.Age.replaceAll(/\D/g, ' ').trim().replaceAll(/\s+/g, ' ').split(' ');
 
@@ -33,7 +32,7 @@ const parseData = async (labelId: number, records: importData[]) => {
 			maxAge = parseInt(ageString[1], 10) * conversion;
 		}
 
-		const maleInput: RecommendationInput = {
+		const maleInput: RecommendationManyInput = {
 			labelId,
 			minAge,
 			maxAge: maxAge !== 0 ? maxAge : undefined,
@@ -43,7 +42,7 @@ const parseData = async (labelId: number, records: importData[]) => {
 
 		curr.push(maleInput);
 
-		const femaleInput: RecommendationInput = {
+		const femaleInput: RecommendationManyInput = {
 			labelId,
 			minAge,
 			maxAge: maxAge !== 0 ? maxAge : undefined,
@@ -54,7 +53,7 @@ const parseData = async (labelId: number, records: importData[]) => {
 		curr.push(femaleInput);
 
 		if (val.Pregancy && val.Pregancy !== '') {
-			const pregancyInput: RecommendationInput = {
+			const pregancyInput: RecommendationManyInput = {
 				labelId,
 				minAge,
 				maxAge: maxAge !== 0 ? maxAge : undefined,
@@ -66,7 +65,7 @@ const parseData = async (labelId: number, records: importData[]) => {
 		}
 
 		if (val.Lactation && val.Lactation !== '') {
-			const lactationInput: RecommendationInput = {
+			const lactationInput: RecommendationManyInput = {
 				labelId,
 				minAge,
 				maxAge: maxAge !== 0 ? maxAge : undefined,
@@ -78,7 +77,7 @@ const parseData = async (labelId: number, records: importData[]) => {
 		}
 
 		return curr;
-	}, [] as RecommendationInput[]);
+	}, [] as RecommendationManyInput[]);
 
 	return inputs;
 };
@@ -97,20 +96,23 @@ const main = async () => {
 		skip_records_with_error: true
 	}) as unknown as importData[];
 
-	const labelResults = await db
-		.select()
-		.from(label)
-		.where(eq(sql`LOWER(${label.name})`, process.argv[3].replaceAll(/_/g, ' ')));
+	const labelResults = await prisma.label
+		.findMany({
+			where: { name: process.argv[3].replaceAll(/_/g, ' ') }
+		})
+		.then((res) => res.map((r) => ({ ...r, id: Number(r.id) })));
 	const labelId = labelResults[0].id;
 
 	const inputs = await parseData(labelId, records);
 
-	await db.insert(recommendation).values(inputs);
+	await prisma.recommendation.createMany({
+		data: inputs
+	});
 };
 
 main()
 	.then(() => exit())
 	.catch((err) => {
-        console.error(err);
-        exit(1)
-    });
+		console.error(err);
+		exit(1);
+	});

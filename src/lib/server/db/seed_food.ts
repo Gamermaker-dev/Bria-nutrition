@@ -1,11 +1,11 @@
-import { exit } from 'node:process';
-import { db } from '.';
-import { food } from './schema';
-import fs from 'fs';
 import { parse } from 'csv-parse';
+import fs from 'fs';
+import { exit } from 'node:process';
+import { prisma } from './prisma';
 
 const main = async () => {
 	const CHUNK_SIZE = 500;
+	const TODAY = new Date();
 
 	console.log('Inserting food nutrients...');
 	const parser = fs.createReadStream(`./src/lib/server/db/files/food.csv`).pipe(
@@ -16,22 +16,24 @@ const main = async () => {
 		})
 	);
 
-	await db.transaction(async (tx) => {
+	await prisma.$transaction(async (tx) => {
 		let chunks = [];
 
-		let input: { name: string; fdcId: number }[] = [];
+		let input: { name: string; fdcId: number; dateAdded: Date }[] = [];
 
 		for await (const row of parser) {
 			chunks.push(row);
 
 			if (chunks.length >= CHUNK_SIZE) {
 				chunks.forEach((c) => {
-					input.push({ name: c.description, fdcId: c.fdc_id });
+					input.push({ name: c.description, fdcId: c.fdc_id, dateAdded: TODAY });
 				});
 
 				if (input.length > 0) {
-					const res = await tx.insert(food).values(input);
-					if (res[0].affectedRows > 0) console.info(`Inserted ${res[0].affectedRows} rows!`);
+					const res = await tx.food.createMany({
+						data: input
+					});
+					if (res.count > 0) console.info(`Inserted ${res.count} rows!`);
 					else console.info('Failed to insert any records');
 				}
 				input = [];

@@ -1,4 +1,4 @@
-import { GOOGLE_GEMINI } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { foodController } from '$lib/server/controllers';
 import type { FoodInput } from '$lib/server/db/schema';
 import { createActionError } from '$lib/util';
@@ -7,7 +7,7 @@ import { fail } from '@sveltejs/kit';
 import { createWorker, PSM } from 'tesseract.js';
 import type { Actions } from './$types';
 
-const genAI = new GoogleGenerativeAI(GOOGLE_GEMINI);
+const genAI = new GoogleGenerativeAI(env.GOOGLE_GEMINI);
 
 export const actions: Actions = {
 	scan: async (event) => {

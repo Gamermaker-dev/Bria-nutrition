@@ -26,6 +26,7 @@ const nutrientSchema = z.object({
     amount: z.number().nonoptional('Nutrient amount is required!')
 });
 export const addFoodSchema = z.object({
+	id: z.number().optional(),
 	fdcId: z.number().nonoptional('FDC Id is required!'),
 	mealDate: z.date().nonoptional('Meal date is required!'),
     name: z.string().nonoptional('Name is required!'),
@@ -37,4 +38,9 @@ export const addFoodSchema = z.object({
 		})
 		.nonempty('Serving must be provided!'),
 	nutrients: z.array(nutrientSchema).nonempty('Nutrients must be provided!')
+});
+
+export const deleteFoodSchema = z.object({
+	id: z.number().nonoptional('ID is required!'),
+	mealId: z.number().nonoptional('Meal is required!')
 });

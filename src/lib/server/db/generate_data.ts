@@ -1,16 +1,19 @@
-import { eq, max, min } from 'drizzle-orm';
-import { db } from '.';
-import { user } from './auth.schema';
-import { food, meal, mealFood } from './schema';
 import { exit } from 'node:process';
+import { prisma } from './prisma';
 
 const main = async () => {
-	const userRecords = await db.select().from(user).where(eq(user.name, 'Gamermaker-dev'));
-	const myUser = userRecords[0];
+	const myUser = await prisma.user.findFirstOrThrow({
+		where: { name: 'Gamermaker-dev' }
+	});
 
-	const minMax = await db.select({ min_val: min(food.id), max_val: max(food.id) }).from(food);
-	const minVal = minMax[0].min_val;
-	const maxVal = minMax[0].max_val;
+	const minMax = await prisma.food
+		.aggregate({
+			_min: { id: true },
+			_max: { id: true }
+		})
+		.then((res) => ({ min: Number(res._min), max: Number(res._max) }));
+	const minVal = minMax.min;
+	const maxVal = minMax.max;
 
 	if (minVal && maxVal) {
 		for (let k = 0; k < 10; k++) {
@@ -18,10 +21,20 @@ const main = async () => {
 				const NOW = new Date(2020 - k, 3, 1);
 				const mealDate = new Date(NOW);
 				mealDate.setDate(NOW.getDate() - i);
-				const mealId = await db.insert(meal).values({ userId: myUser.id, mealDate }).$returningId();
+				const meal = await prisma.meal
+					.create({
+						data: {
+							userId: myUser.id,
+							mealDate,
+							dateAdded: new Date()
+						}
+					})
+					.then((res) => ({ ...res, id: Number(res.id) }));
 				for (let j = 0; j < 7; j++) {
 					const foodId = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
-					await db.insert(mealFood).values({ mealId: mealId[0].id, foodId, amount: 1 });
+					await prisma.mealFood.create({
+						data: { mealId: meal.id, foodId, amount: 1 }
+					});
 				}
 			}
 		}

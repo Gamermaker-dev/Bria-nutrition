@@ -67,7 +67,7 @@
 
 <ErrorBanner />
 
-<div class="flex flex-col min-h-screen">
+<div class="flex flex-col min-h-screen relative">
 	{#if data.isMobile}
 		<Mobile user={data.user} navbar={data.navbar}>
 			{@render children()}

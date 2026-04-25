@@ -63,6 +63,7 @@
 					type="hidden"
 					name="input"
 					value={JSON.stringify({
+						id: type === 'custom' ? data.food.customId : undefined,
 						fdcId: type === 'fdc' ? data.food.fdcId : 0,
 						mealDate,
 						serving: `${serving}`,
