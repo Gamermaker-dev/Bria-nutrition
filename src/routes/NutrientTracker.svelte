@@ -30,6 +30,7 @@
 			value > 120 && 'text-red-500'
 		)}
 		value={stats > 100 ? 100 : stats}
+		track
 		{size}
 		{width}
 	>
