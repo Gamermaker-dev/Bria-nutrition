@@ -15,6 +15,7 @@
 			<div class="grid gap-4">
 				<TextField label="Email" type="email" name="email" />
 				<TextField label="Password" type="password" name="password" />
+				<TextField label="Confirm Password" type="password" name="confirmPassword" />
 				<TextField label="Name" name="name" />
 				<Button class="bg-primary-400 text-white place-self-start" type="submit">Sign up</Button>
 			</div>

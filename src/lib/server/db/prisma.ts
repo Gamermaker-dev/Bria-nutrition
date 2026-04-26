@@ -1,8 +1,8 @@
-import { env } from '$env/dynamic/private';
 import { PrismaMssql } from '@prisma/adapter-mssql';
+import 'dotenv/config';
 import { PrismaClient } from '../../../prisma/generated/prisma/client';
 
-const adapter = new PrismaMssql(env.DATABASE_URL);
+const adapter = new PrismaMssql(process.env.DATABASE_URL ?? 'sqlserver://localhost:1433;database-placeholder;encrypt=true;trustServerCertificate=true;');
 const base = new PrismaClient({
 	adapter,
 	log: [{ emit: 'event', level: 'query' }, 'info', { emit: 'event', level: 'error' }]
