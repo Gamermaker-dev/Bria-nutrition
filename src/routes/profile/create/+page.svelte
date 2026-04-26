@@ -139,12 +139,7 @@
 				};
 			}}
 		>
-			<input type="hidden" name="birthDate" value={input.birthDate} />
-			<input type="hidden" name="physicalType" value={input.physicalTypeId} />
-			<input type="hidden" name="heightInch" value={input.heightInch} />
-			<input type="hidden" name="heightFeet" value={input.heightFeet} />
-			<input type="hidden" name="weight" value={input.weight} />
-			<input type="hidden" name="activityLevel" value={input.activityLevelId} />
+		    <input type="hidden" name="input" value={JSON.stringify(input)} />
 			<Button class="bg-primary w-fit text-white" type="submit">Submit</Button>
 		</form>
 	</div>

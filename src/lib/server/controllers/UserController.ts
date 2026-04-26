@@ -197,6 +197,7 @@ export class UserController extends BaseModelController {
 				.create({
 					data: {
 						birthDate: input.birthDate,
+						age: calculateAge(input.birthDate),
 						physicalType: {
 							connect: { id: input.physicalType.connect?.id }
 						},

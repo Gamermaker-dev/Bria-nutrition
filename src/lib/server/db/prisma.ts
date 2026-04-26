@@ -2,7 +2,19 @@ import { PrismaMssql } from '@prisma/adapter-mssql';
 import 'dotenv/config';
 import { PrismaClient } from '../../../prisma/generated/prisma/client';
 
-const adapter = new PrismaMssql(process.env.DATABASE_URL ?? 'sqlserver://localhost:1433;database-placeholder;encrypt=true;trustServerCertificate=true;');
+const config = {
+	server: process.env.DB_HOST ?? 'localhost',
+	port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 1433,
+	database: process.env.DB_NAME ?? 'db',
+	user: process.env.DB_USER ?? 'user',
+	password: process.env.DB_PASS ?? 'pass',
+	options: {
+		encrypt: true,
+		trustServerCertificate: true // For self-signed certificates
+	}
+};
+
+const adapter = new PrismaMssql(config);
 const base = new PrismaClient({
 	adapter,
 	log: [{ emit: 'event', level: 'query' }, 'info', { emit: 'event', level: 'error' }]
