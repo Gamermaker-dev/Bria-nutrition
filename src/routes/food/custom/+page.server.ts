@@ -35,7 +35,9 @@ export const actions: Actions = {
 
 		try {
 			// 3. Initialize Tesseract Worker
-			const worker = await createWorker('eng');
+			const worker = await createWorker('eng', 1, {
+				 workerPath: './node_modules/tesseract.js/src/worker-script/node/index.js',
+			});
 
 			await worker.setParameters({
 				tessedit_pageseg_mode: PSM.SINGLE_BLOCK
