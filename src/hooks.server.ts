@@ -32,7 +32,12 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	if (session) {
 		event.locals.session = session.session;
 		event.locals.user = session.user;
-		event.locals.profile = (await userController.getById(event.locals.user.id)).data;
+		try {
+			event.locals.profile = (await userController.getById(event.locals.user.id)).data;
+		} catch (err) {
+			console.error('Error occurred getting profile. Likely one does not exist yet:', err);
+			event.locals.profile = undefined;
+		}
 	}
 
 	const userAgent = event.request.headers.get('User-Agent');
