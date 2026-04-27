@@ -20,19 +20,19 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 		await prisma.$disconnect();
 	}
 
+	let session = undefined;
 	try {
-		const session = await auth.api.getSession({ headers: event.request.headers });
-
-		if (session) {
-			event.locals.session = session.session;
-			event.locals.user = session.user;
-			event.locals.profile = (await userController.getById(event.locals.user.id)).data;
-		}
+		session = await auth.api.getSession({ headers: event.request.headers });
 	} catch (err) {
 		console.error('Unexpected Better Auth exception:', err);
 		event.locals.session = undefined;
 		event.locals.user = undefined;
 		event.locals.profile = undefined;
+	}
+	if (session) {
+		event.locals.session = session.session;
+		event.locals.user = session.user;
+		event.locals.profile = (await userController.getById(event.locals.user.id)).data;
 	}
 
 	const userAgent = event.request.headers.get('User-Agent');
