@@ -12,6 +12,13 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		const user = event.locals.user;
 
 		if (!user) throw error(400, { message: 'Bad request.' });
@@ -29,7 +36,8 @@ export const load: PageServerLoad = async (event) => {
 		return { profile: profile.data, activityLevels: res.data, physicalTypes: physRes.data };
 	} catch (err) {
 		console.error('Unexpected error:', err);
-		throw error(500, { message: 'Unexpected error.' });
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };
 
@@ -66,7 +74,7 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Unexpected error:', err);
-			return fail(500, { notification: createNotification('Failed to update profile!', 'danger') });
+			return fail(503, { notification: createNotification('Failed to update profile!', 'danger') });
 		}
 	}
 };

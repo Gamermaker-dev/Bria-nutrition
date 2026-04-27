@@ -3,13 +3,20 @@ import type { FoodInput } from '$lib/server/db/schema';
 import { addFoodSchema } from '$lib/server/schemas';
 import type { FoodById } from '$lib/types/usda/FoodById';
 import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
-import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
+import { error, fail, isRedirect } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
-import dayjs from 'dayjs';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		const params = Object.fromEntries(event.url.searchParams) as {
 			fdcId?: string;
 			customId?: string;
@@ -48,16 +55,14 @@ export const load: PageServerLoad = async (event) => {
 				return { food: customFood, type: 'custom' };
 			}
 
-			return error(400, { message: 'Bad request.' });
+			throw error(400, { message: 'Bad request.' });
 		}
 
-		return error(400, { message: 'Bad request.' });
+		throw error(400, { message: 'Bad request.' });
 	} catch (err) {
 		console.error('Unexpected error loading food add page:', err);
-		const previousPage = event.request.headers.get('referer') || '/';
-		const url = new URL(previousPage);
-		if (url.searchParams.get('error') == undefined) url.searchParams.append('error', 'true');
-		redirect(307, url);
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later' });
 	}
 };
 
@@ -119,7 +124,7 @@ export const actions: Actions = {
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Error occurred adding food:', err);
-			return fail(500, {
+			return fail(503, {
 				notification: createNotification('Unexpected error occurred!', 'danger')
 			});
 		}

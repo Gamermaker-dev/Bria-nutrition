@@ -6,6 +6,13 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		const params = Object.fromEntries(event.url.searchParams) as {
 			search?: string;
 			page?: string;
@@ -65,6 +72,7 @@ export const load: PageServerLoad = async (event) => {
 		return { results, search, page, tab, submit };
 	} catch (err) {
 		console.error('Food search failed:', err);
-		throw error(500, { message: 'Whoops! Something unexpected occured!' });
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };

@@ -1,18 +1,27 @@
 import { auth } from '$lib/server/auth';
 import { registerSchema } from '$lib/server/schemas';
 import { createNotification, parseZErrors } from '$lib/util';
-import { fail, isRedirect, redirect } from '@sveltejs/kit';
+import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		if (event.locals.user) {
 			return redirect(302, '/');
 		}
 		return {};
 	} catch (err) {
+		if (isRedirect(err) || err?.status === 503) throw err;
 		console.error('Error occurred visiting register:', err);
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };
 
@@ -46,7 +55,7 @@ export const actions: Actions = {
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error ocurred while signing up:', err);
-			return fail(500, { notification: createNotification('Failed to register!', 'danger') });
+			return fail(503, { notification: createNotification('Failed to register!', 'danger') });
 		}
 	}
 };

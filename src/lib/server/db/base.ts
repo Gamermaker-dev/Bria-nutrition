@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 export class BaseModelController {
@@ -47,6 +48,6 @@ export class BaseModelController {
 
 	protected error = (err: unknown) => {
 		this.logError(`${err}`);
-		return { status: 500, data: undefined, message: `${err}` };
+		throw error(503, { message: 'Unable to load page. Please try again later.'});
 	};
 }

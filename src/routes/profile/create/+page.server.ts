@@ -13,6 +13,13 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		if (event.locals.profile) {
 			redirect(302, '/');
 		}
@@ -28,7 +35,8 @@ export const load: PageServerLoad = async (event) => {
 	} catch (err) {
 		if (isRedirect(err)) throw err;
 		console.error('Error occurred loading create profile page:', err);
-		throw error(500);
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later.'});
 	}
 };
 
@@ -69,7 +77,7 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Error occurred creating profile:', err);
-			return fail(500, {
+			return fail(503, {
 				notification: createNotification('An unexpected error occurred creating profile.', 'danger')
 			});
 		}

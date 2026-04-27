@@ -70,7 +70,7 @@ export class UserController extends BaseModelController {
 						});
 			if (!profileToUse) profileToUse = profiles[profiles.length - 1];
 
-			if (profileToUse == undefined) throw error(500, { message: 'User has no profile!' });
+			if (profileToUse == undefined) throw error(503, { message: 'User has no profile!' });
 
 			const data = await prisma.$queryRaw`
 					 select t.[userId],

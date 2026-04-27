@@ -38,6 +38,6 @@ export const load: LayoutServerLoad = async (event) => {
 		if (isRedirect(err)) throw err;
 
 		console.error('Unexpected error in layout:', err);
-		throw error(500);
+		throw error(503, { message: 'Unable to load app. Please try again later.' });
 	}
 };

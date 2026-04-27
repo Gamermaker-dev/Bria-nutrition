@@ -3,15 +3,22 @@ import type { FoodInput } from '$lib/server/db/schema';
 import { addCustomFoodSchema } from '$lib/server/schemas';
 import { createNotification, parseZErrors } from '$lib/util';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import 'dotenv/config';
 import { createWorker, PSM } from 'tesseract.js';
 import z from 'zod';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI ?? '');
 
+export const load: PageServerLoad = async (event) => {
+	if (!event.locals.dbLive) {
+		throw error(503, {
+			message: 'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+		});
+	}
+};
 export const actions: Actions = {
 	scan: async (event) => {
 		const formData = await event.request.formData();
@@ -56,7 +63,7 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('OCR Error:', err);
-			return fail(500, { notification: createNotification('Failed to process image', 'danger') });
+			return fail(503, { notification: createNotification('Failed to process image', 'danger') });
 		}
 	},
 	gemini: async (event) => {
@@ -172,7 +179,7 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Error adding food:', err);
-			return fail(500, { notification: createNotification('Failed to add food!', 'danger') });
+			return fail(503, { notification: createNotification('Failed to add food!', 'danger') });
 		}
 	}
 };

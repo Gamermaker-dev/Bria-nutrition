@@ -9,6 +9,13 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		if (event.locals.user) {
 			const rawMealDate = event.url.searchParams.get('mealDate');
 
@@ -28,9 +35,11 @@ export const load: PageServerLoad = async (event) => {
 			return { dashboard: dashboard.data, meal: meal.data, mealDate };
 		}
 
-		throw error(500, 'User required.');
+		throw error(503, 'User required.');
 	} catch (err) {
-		throw error(500, { message: `${err}` });
+		if (err?.status === 503) throw err;
+		console.error('Unexpected error in home:', err);
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };
 
@@ -60,7 +69,7 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error('Failed to delete food from meal:', err);
-			return fail(500, {
+			return fail(503, {
 				notification: createNotification('Failed to delete food from meal!', 'danger')
 			});
 		}

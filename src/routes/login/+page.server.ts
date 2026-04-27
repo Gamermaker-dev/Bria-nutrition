@@ -7,12 +7,23 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		if (event.locals.user) {
 			return redirect(302, '/');
 		}
 		return {};
 	} catch (err) {
-		throw error(500, { message: `${err}` });
+		if (isRedirect(err)) throw err;
+
+		console.error('Unexpected error occurred on login page:', err);
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };
 
@@ -43,7 +54,7 @@ export const actions: Actions = {
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error occurred while logging in:', err);
-			return fail(500, { notification: createNotification('Failed to sign-in!', 'danger') });
+			return fail(503, { notification: createNotification('Failed to sign-in!', 'danger') });
 		}
 	},
 	signInSocial: async (event) => {
@@ -67,7 +78,7 @@ export const actions: Actions = {
 			if (isRedirect(err)) throw err;
 			else {
 				console.error('Unexpected error occurred while signing in through social:', err);
-				return fail(500, { notification: createNotification('Failed to sign-in!', 'danger') });
+				return fail(503, { notification: createNotification('Failed to sign-in!', 'danger') });
 			}
 		}
 	},
@@ -80,7 +91,7 @@ export const actions: Actions = {
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			console.error('Unexpected error occurred signing out:', err);
-			return fail(500, {
+			return fail(503, {
 				notification: createNotification('Failed to sign-out!', 'danger')
 			});
 		}

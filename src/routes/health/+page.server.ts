@@ -7,6 +7,13 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
+		if (!event.locals.dbLive) {
+			throw error(503, {
+				message:
+					'Unable to load Bria Nutrition. We apologize for the error. Please try again later.'
+			});
+		}
+
 		const userId = event.locals.user.id;
 
 		if (userId == undefined) throw error(400, { message: 'Bad request!' });
@@ -22,9 +29,7 @@ export const load: PageServerLoad = async (event) => {
 				? dayjs.utc(params.startDate).toDate()
 				: dayjs.utc().subtract(7, 'days').toDate();
 		let endDate =
-			params.endDate != undefined
-				? dayjs.utc(params.endDate).toDate()
-				: dayjs.utc().toDate();
+			params.endDate != undefined ? dayjs.utc(params.endDate).toDate() : dayjs.utc().toDate();
 		const groupBy =
 			params.groupBy != undefined && ['year', 'month', 'date'].includes(params.groupBy)
 				? params.groupBy
@@ -41,6 +46,7 @@ export const load: PageServerLoad = async (event) => {
 		return { startDate, endDate, groupBy, report: report.data };
 	} catch (err) {
 		console.error('Error loading health report:', err);
-		return error(500);
+		if (err?.status === 503) throw err;
+		throw error(503, { message: 'Unable to load page. Please try again later.' });
 	}
 };

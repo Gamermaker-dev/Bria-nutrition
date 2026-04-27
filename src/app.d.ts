@@ -10,6 +10,7 @@ declare global {
 			session?: Session;
 			profile?: Profile;
 			isMobile: boolean;
+			dbLive: boolean
 		}
 
 		// interface Error {}
