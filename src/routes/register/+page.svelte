@@ -4,6 +4,7 @@
 
 	import BriaPage from '$lib/components/BriaPage.svelte';
 	import type { ActionData } from './$types';
+	import { isLoading } from '$lib/stores';
 
 	let { form }: { form: ActionData } = $props();
 </script>
@@ -11,7 +12,15 @@
 <BriaPage errors={form?.errors} notification={form?.notification}>
 	<div class="container p-4">
 		<span class="text-xl font-bold">Register</span>
-		<form method="post" action="?/signUp" use:enhance>
+		<form method="post" action="?/signUp" use:enhance={() => {
+			const timer = setTimeout(() => ($isLoading = true), 100);
+
+			return async ({ update }) => {
+				await update();
+				clearTimeout(timer);
+				$isLoading = false;
+			}
+		}}>
 			<div class="grid gap-4">
 				<TextField label="Email" type="email" name="email" />
 				<TextField label="Password" type="password" name="password" />

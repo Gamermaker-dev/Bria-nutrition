@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { isLoading } from '$lib/stores';
 	import type { NavbarItemProps } from '$lib/types/NavbarItemProps';
 	import type { Snippet } from 'svelte';
 	import { Button, Menu, Toggle } from 'svelte-ux';
@@ -37,7 +38,19 @@
 										{#if sub.href != undefined}
 											<Button onclick={() => goto(resolve(sub.href))}>{sub.text}</Button>
 										{:else if sub.action != undefined}
-											<form method="post" action={sub.action} use:enhance>
+											<form
+												method="post"
+												action={sub.action}
+												use:enhance={() => {
+													const timer = setTimeout(() => ($isLoading = true), 100);
+
+													return async ({ update }) => {
+														await update();
+														clearTimeout(timer);
+														$isLoading = false;
+													};
+												}}
+											>
 												<Button type="submit">{sub.text}</Button>
 											</form>
 										{/if}
@@ -49,7 +62,19 @@
 					{#if nav.href !== undefined}
 						<Button onclick={() => goto(resolve(nav.href))}>{nav.text}</Button>
 					{:else if nav.action !== undefined}
-						<form method="post" action={nav.action} use:enhance>
+						<form
+							method="post"
+							action={nav.action}
+							use:enhance={() => {
+								const timer = setTimeout(() => ($isLoading = true), 100);
+
+								return async ({ update }) => {
+									await update();
+									clearTimeout(timer);
+									$isLoading = false;
+								};
+							}}
+						>
 							<Button type="submit">{nav.text}</Button>
 						</form>
 					{/if}

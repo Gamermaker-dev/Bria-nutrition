@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import BriaPage from '$lib/components/BriaPage.svelte';
+	import { isLoading } from '$lib/stores.js';
 	import {
 		mdiBabyBottle,
 		mdiHumanFemale,
@@ -117,7 +118,20 @@
 			{/each}
 		</div>
 
-		<form method="post" id="createProfileForm" action="/profile" use:enhance>
+		<form
+			method="post"
+			id="createProfileForm"
+			action="/profile"
+			use:enhance={() => {
+				const timer = setTimeout(() => ($isLoading = true), 100);
+
+				return async ({ update }) => {
+					await update();
+					clearTimeout(timer);
+					$isLoading = false;
+				};
+			}}
+		>
 			<input type="hidden" name="input" value={JSON.stringify(input)} />
 			<Button class="bg-primary w-fit text-white" type="submit">Submit</Button>
 		</form>
