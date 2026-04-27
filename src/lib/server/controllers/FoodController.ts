@@ -1,4 +1,5 @@
 import { type Food, type FoodInput } from '$lib/server/db/schema';
+import dayjs from 'dayjs';
 import { PrismaClientKnownRequestError } from '../../../prisma/generated/prisma/internal/prismaNamespace';
 import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
@@ -98,7 +99,7 @@ export class FoodController extends BaseModelController {
 				.findMany({
 					where: {
 						userId,
-						name: { contains: search }
+						name: { contains: search != '' ? search : undefined }
 					},
 					take: 50,
 					skip: (page - 1) * 50
@@ -118,7 +119,7 @@ export class FoodController extends BaseModelController {
 				where: {
 					userId,
 					name: {
-						contains: search
+						contains: search != '' ? search : undefined
 					}
 				}
 			});
@@ -134,7 +135,7 @@ export class FoodController extends BaseModelController {
 			this.setOperation(`create${this.TABLE_NAME}`);
 
 			const results = await prisma.$transaction(async (tx) => {
-				const TODAY = new Date();
+				const TODAY = dayjs.utc().toDate();
 				let mealId: number = 0;
 				let foodId: number = 0;
 
@@ -191,19 +192,23 @@ export class FoodController extends BaseModelController {
 						(err instanceof PrismaClientKnownRequestError && err.code === 'P2025') ||
 						(err instanceof CustomFoodError && err.code === 'C1000')
 					) {
+						const data = {
+							name: input.name,
+							fdcId: 0,
+							userId: '',
+							foodNutrient: {
+								create: input.nutrients.map((n) => ({
+									nutrientId: n.nutrientId,
+									amount: n.amount
+								}))
+							},
+							dateAdded: TODAY
+						};
+						if (input.fdcId !== 0) data.fdcId = input.fdcId;
+						else data.userId = input.userId;
 						const newFood = await tx.food
 							.create({
-								data: {
-									name: input.name,
-									fdcId: input.fdcId,
-									foodNutrient: {
-										create: input.nutrients.map((n) => ({
-											nutrientId: n.nutrientId,
-											amount: n.amount
-										}))
-									},
-									dateAdded: TODAY
-								}
+								data
 							})
 							.then(this.convertSingle);
 

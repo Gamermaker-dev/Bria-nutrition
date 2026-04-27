@@ -1,10 +1,13 @@
 import { foodController } from '$lib/server/controllers';
 import type { FoodInput } from '$lib/server/db/schema';
-import { createNotification } from '$lib/util';
+import { addCustomFoodSchema } from '$lib/server/schemas';
+import { createNotification, parseZErrors } from '$lib/util';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { fail } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import 'dotenv/config';
 import { createWorker, PSM } from 'tesseract.js';
+import z from 'zod';
 import type { Actions } from './$types';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI ?? '');
@@ -127,48 +130,46 @@ export const actions: Actions = {
 	},
 	add: async (event) => {
 		try {
-			const formData = await event.request.formData();
+			const formData = Object.fromEntries(await event.request.formData()) as {
+				nutritionInput: string;
+			};
+			const rawNutritionInput = JSON.parse(formData.nutritionInput);
+			const results = addCustomFoodSchema.safeParse(rawNutritionInput);
 
-			const rawNutritionInput = formData.get('nutritionInput')?.toString();
-			if (rawNutritionInput) {
-				const nInput = JSON.parse(rawNutritionInput) as {
-					name: string;
-					calories: number;
-					carbs: number;
-					protein: number;
-					fat: number;
-					mealDate: string;
-					serving: number;
-				};
-				const foodInput: FoodInput = {
-					userId: event.locals.user?.id ?? '',
-					mealDate: nInput.mealDate,
-					fdcId: 0, // not really needed
-					name: nInput.name,
-					serving: nInput.serving,
-					nutrients: [
-						{ nutrientId: 10, amount: nInput.calories },
-						{ nutrientId: 7, amount: nInput.carbs },
-						{ nutrientId: 5, amount: nInput.protein },
-						{ nutrientId: 6, amount: nInput.fat }
-					]
-				};
-
-				const res = await foodController.create(foodInput);
-
-				if (res.status !== 200)
-					return fail(400, {
-						notification: createNotification(
-							'Whoops! Something unexpected happened adding your custom food!',
-							'danger'
-						)
-					});
-
-				return {
-					status: 200,
-					notification: createNotification('Successfully created food!', 'success')
-				};
+			if (!results.success) {
+				return fail(400, {
+					errors: parseZErrors(z.treeifyError(results.error)),
+					notification: createNotification('Validation failed!', 'danger')
+				});
 			}
+			const foodInput: FoodInput = {
+				userId: event.locals.user?.id ?? '',
+				mealDate: dayjs.utc(results.data.mealDate).toDate(),
+				fdcId: 0, // not really needed
+				name: results.data.name,
+				serving: parseFloat(results.data.serving),
+				nutrients: [
+					{ nutrientId: 10, amount: parseFloat(results.data.calories) },
+					{ nutrientId: 7, amount: parseFloat(results.data.carbs) },
+					{ nutrientId: 5, amount: parseFloat(results.data.protein) },
+					{ nutrientId: 6, amount: parseFloat(results.data.fat) }
+				]
+			};
+
+			const res = await foodController.create(foodInput);
+
+			if (res.status !== 200)
+				return fail(400, {
+					notification: createNotification(
+						'Whoops! Something unexpected happened adding your custom food!',
+						'danger'
+					)
+				});
+
+			return {
+				status: 200,
+				notification: createNotification('Successfully created food!', 'success')
+			};
 		} catch (err) {
 			console.error('Error adding food:', err);
 			return fail(500, { notification: createNotification('Failed to add food!', 'danger') });

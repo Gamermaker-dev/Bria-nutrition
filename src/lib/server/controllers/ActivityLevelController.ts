@@ -1,7 +1,9 @@
 import { type ActivityLevelInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
+import dayjs from 'dayjs';
 import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
+
 
 export class ActivityLevelController extends BaseModelController {
 	constructor(tableName: string) {
@@ -68,7 +70,7 @@ export class ActivityLevelController extends BaseModelController {
 							name: input.name,
 							description: input.description,
 							multiplier: input.multiplier,
-							dateAdded: new Date()
+							dateAdded: dayjs.utc().toDate()
 						}
 					})
 				])

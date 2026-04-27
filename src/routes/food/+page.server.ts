@@ -1,8 +1,8 @@
-import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import { foodController, usdaApi } from '$lib/server/controllers';
 import type { FoodPaginatedSearch } from '$lib/types/usda/FoodPaginatedSearch';
-import { checkForErrors } from '$lib/util';
+import { checkForErrors, createNotification } from '$lib/util';
+import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -27,6 +27,17 @@ export const load: PageServerLoad = async (event) => {
 			} catch (err) {
 				console.error('Error with USDA:', err);
 				results = undefined;
+				return {
+					results,
+					search,
+					page,
+					tab,
+					submit,
+					notification: createNotification(
+						'Unable to reach USDA API. Please try again later',
+						'warning'
+					)
+				};
 			}
 		} else {
 			const custom = await foodController.getByUserId(event.locals.user.id, page, search);

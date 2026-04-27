@@ -6,6 +6,7 @@
 	import Container from '$lib/components/Container.svelte';
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
 	import { isLoading } from '$lib/stores.js';
+	import dayjs from 'dayjs';
 	import { Button, ButtonGroup } from 'svelte-ux';
 
 	let { data, form } = $props();
@@ -17,7 +18,7 @@
 
 	const type = $derived(data.type) as 'fdc' | 'custom';
 
-	let mealDate = $state(new Date());
+	let mealDate = $state(dayjs().toDate());
 	let serving = $state(1);
 
 	$effect(() => {
@@ -68,7 +69,7 @@
 						value={JSON.stringify({
 							id: type === 'custom' ? data.food.customId : undefined,
 							fdcId: type === 'fdc' ? data.food.fdcId : 0,
-							mealDate,
+							mealDate: dayjs(mealDate).toDate(),
 							serving: `${serving}`,
 							name: data.food.description,
 							nutrients: data.food.foodNutrients.map((n) => ({

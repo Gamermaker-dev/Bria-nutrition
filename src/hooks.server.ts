@@ -3,6 +3,10 @@ import { auth } from '$lib/server/auth';
 import { userController } from '$lib/server/controllers';
 import { isRedirect, redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	try {

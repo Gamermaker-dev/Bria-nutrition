@@ -7,6 +7,7 @@ import type { ProfileInput } from '$lib/server/db/schema';
 import { addProfileSchema } from '$lib/server/schemas';
 import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
 import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -36,7 +37,7 @@ export const actions: Actions = {
 		try {
 			const formData = Object.fromEntries(await event.request.formData()) as { input: string };
 			const rawInput = JSON.parse(formData.input);
-			rawInput.birthDate = new Date(rawInput.birthDate);
+			rawInput.birthDate = dayjs.utc(rawInput.birthDate).toDate();
 			const results = addProfileSchema.safeParse(rawInput);
 
 			if (!results.success) {
@@ -51,11 +52,16 @@ export const actions: Actions = {
 				weight: results.data.weight,
 				activityLevel: { connect: { id: results.data.activityLevelId } },
 				user: { connect: { id: event.locals.user.id } },
-				dateAdded: new Date(),
+				dateAdded: dayjs.utc().toDate(),
 				dateUpdated: null
 			};
 
-			await userController.create(input);
+			const res = await userController.create(input);
+
+			if (res.status !== 200)
+				return fail(400, {
+					notfication: createNotification('Failed to create profile!', 'danger')
+				});
 
 			return {
 				status: 200,

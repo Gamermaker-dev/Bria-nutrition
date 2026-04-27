@@ -17,11 +17,11 @@
 	let searchQuery = $derived(data.search);
 	let submit = $derived(data.submit);
 
-	const search = async (searchQuery?: string, page?: number) => {
+	const search = async (searchQuery?: string, page?: number, submit?: boolean) => {
 		try {
 			goto(
 				resolve(
-					`/food?search=${encodeURIComponent(searchQuery ?? '')}&page=${page ?? 1}&tab=${encodeURIComponent(tab)}`
+					`/food?search=${encodeURIComponent(searchQuery ?? '')}&page=${page ?? 1}&tab=${encodeURIComponent(tab)}&submit=${encodeURIComponent(submit ?? false)}`
 				),
 				{
 					replaceState: false,
@@ -35,7 +35,7 @@
 	};
 
 	const updateSearchQuery = async (searchQuery?: string) => {
-		search(searchQuery, 1);
+		search(searchQuery, 1, true);
 	};
 
 	const updatePage = async (page?: number) => {
@@ -43,7 +43,7 @@
 	};
 
 	const updateTab = (tab: 'usda' | 'custom') =>
-		goto(resolve(`/food?search=&page=1&tab=${encodeURIComponent(tab)}`), {
+		goto(resolve(`/food?search=&page=1&tab=${encodeURIComponent(tab)}&submit=false`), {
 			replaceState: false,
 			noScroll: true,
 			keepFocus: true
@@ -53,13 +53,7 @@
 	let qrPaused = $state(false);
 </script>
 
-{#if data.results == undefined && searchQuery.trim() !== '' && tab === 'usda'}
-	<div class="flex flex-col bg-red-200 border-4 border-red-600 rounded-sm">
-		<p>Unable to contact USDA. Please try again later!</p>
-	</div>
-{/if}
-
-<BriaPage>
+<BriaPage notification={data.notification}>
 	<Dialog bind:open={qrCodeOpen}>
 		<QrCodeScanner
 			class="py-2"

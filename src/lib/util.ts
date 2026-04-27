@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { ResponseCheck } from './server/Response';
+import dayjs from 'dayjs';
 
 const checkForErrors = (res: ResponseCheck) => {
 	if (res.status !== 200 && typeof res.message === 'string') {
@@ -8,12 +9,8 @@ const checkForErrors = (res: ResponseCheck) => {
 };
 
 const formatDate = (val: Date | string, format?: 'date' | 'month' | 'year') => {
-	const date = new Date(val);
-	return format === 'year'
-		? `${date.getFullYear()}`
-		: format === 'month'
-			? `${date.getFullYear()} - ${date.getMonth() + 1}`
-			: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+	const f = format === 'date' ? 'YYYY-MM-DD' : format === 'month' ? 'YYYY-MM' : 'YYYY'
+	return dayjs(val).format(f);
 };
 
 const parseZErrors = (errors: {
@@ -36,20 +33,15 @@ const createNotification = (text: string, type: 'success' | 'warning' | 'danger'
 };
 
 const calculateAge = (birth: Date | string) => {
-	const today = new Date();
-	if (typeof birth === 'string') {
-		birth = new Date(birth);
-	}
+	const today = dayjs();
 
-	let age = today.getFullYear() - birth.getFullYear();
-	const monthDiff = today.getMonth() - birth.getMonth();
-
-	// Check if the birthday has occurred yet this year
-	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-		age--;
-	}
-
-	return age;
+	return today.diff(dayjs(birth), 'year');
 };
 
-export { calculateAge, checkForErrors, createNotification, formatDate, parseZErrors };
+export {
+	calculateAge,
+	checkForErrors,
+	createNotification,
+	formatDate,
+	parseZErrors
+};

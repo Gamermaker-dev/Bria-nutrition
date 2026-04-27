@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import BriaPage from '$lib/components/BriaPage.svelte';
 	import {
 		mdiBabyBottle,
@@ -28,6 +30,10 @@
 	});
 	let activityLevels = $derived(data.activityLevels ? data.activityLevels : []);
 	let physicalTypes = $derived(data.physicalTypes ? data.physicalTypes : []);
+
+	$effect(() => {
+		if (form?.status === 200) goto(resolve('/'));
+	});
 </script>
 
 <BriaPage errors={form?.errors} notification={form?.notification}>

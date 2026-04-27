@@ -6,6 +6,7 @@ import {
 import { updateProfileSchema } from '$lib/server/schemas';
 import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
 import { error, fail } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -37,7 +38,7 @@ export const actions: Actions = {
 		try {
 			const formData = Object.fromEntries(await event.request.formData()) as { input: string };
 			const rawInput = JSON.parse(formData.input);
-			rawInput.birthDate = new Date(rawInput.birthDate);
+			rawInput.birthDate = dayjs.utc(rawInput.birthDate).toDate();
 			const result = updateProfileSchema.safeParse(rawInput);
 
 			if (!result.success) {
@@ -49,7 +50,7 @@ export const actions: Actions = {
 				user: { connect: { id: event.locals.user?.id ?? '' } },
 				physicalType: { connect: { id: result.data.physicalTypeId } },
 				activityLevel: { connect: { id: result.data.activityLevelId } },
-				dateAdded: new Date()
+				dateAdded: dayjs.utc().toDate()
 			});
 
 			if (res.status !== 200) {

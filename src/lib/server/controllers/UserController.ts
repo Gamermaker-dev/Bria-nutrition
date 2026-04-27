@@ -2,8 +2,9 @@ import { profileWithUser, type ProfileInput } from '$lib/server/db/schema';
 import type { Response } from '$lib/server/Response';
 import type { Dashboard } from '$lib/types/Dashboard';
 import type { HealthReport } from '$lib/types/HealthReport';
-import { calculateAge, formatDate } from '$lib/util';
+import { calculateAge } from '$lib/util';
 import { error } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import { BaseModelController } from '../db/base';
 import { prisma } from '../db/prisma';
 
@@ -107,7 +108,7 @@ export class UserController extends BaseModelController {
 								fn.[nutrientId] = n.[id]
 							where
 								m.[userId] = ${userId}
-							and m.[mealDate] = ${formatDate(mealDate)}
+							and m.[mealDate] = ${dayjs.utc(mealDate).format('YYYY-MM-DD')}
 									) [t]
 						inner join dbo.[profile] p on
 							t.[userId] = p.[userId]
@@ -182,7 +183,7 @@ export class UserController extends BaseModelController {
 					[report].[mealDate],
 					[report].[name]
 				order by [report].[mealDate]
-			`;
+			`.then((res) => res.map((r) => ({ ...r, mealDate: dayjs.utc(r.mealDate).format('YYYY-MM-DD') })));
 
 			return this.success(data);
 		} catch (err) {
@@ -212,7 +213,7 @@ export class UserController extends BaseModelController {
 						activityLevel: {
 							connect: { id: input.activityLevel.connect?.id }
 						},
-						dateAdded: new Date()
+						dateAdded: dayjs.utc().toDate()
 					}
 				})
 				.then((res) => ({
@@ -235,12 +236,12 @@ export class UserController extends BaseModelController {
 			const data = await prisma.$transaction(async (tx) => {
 				try {
 					let currDateAdded: string = '';
-					const newDateAdded: string = formatDate(new Date());
+					const newDateAdded: string = dayjs.utc().format('YYYY-MM-DD');
 					const curr = await tx.profile.findFirst({
 						where: { AND: [{ userId: input.user.connect?.id }, { nextProfileId: null }] }
 					});
 					if (curr) {
-						currDateAdded = formatDate(curr.dateAdded);
+						currDateAdded = dayjs.utc(curr.dateAdded).format('YYYY-MM-DD');
 					}
 
 					if (newDateAdded != currDateAdded) {
@@ -260,7 +261,7 @@ export class UserController extends BaseModelController {
 								activityLevel: {
 									connect: { id: input.activityLevel.connect?.id }
 								},
-								dateAdded: new Date()
+								dateAdded: dayjs.utc().toDate()
 							}
 						});
 
@@ -268,7 +269,7 @@ export class UserController extends BaseModelController {
 							.update({
 								data: {
 									nextProfileId: newInsert.id,
-									dateUpdated: new Date()
+									dateUpdated: dayjs.utc().toDate()
 								},
 								where: { id: input.id }
 							})
@@ -292,7 +293,7 @@ export class UserController extends BaseModelController {
 										heightInch: input.heightInch,
 										physicalTypeId: input.physicalType.connect?.id,
 										activityLevelId: input.activityLevel.connect?.id,
-										dateUpdated: new Date()
+										dateUpdated: dayjs.utc().toDate()
 									},
 									where: { id: input.id }
 								})
@@ -326,7 +327,7 @@ export class UserController extends BaseModelController {
 			this.setOperation(`delete${this.TABLE_NAME}`);
 			const data = await prisma.profile
 				.update({
-					data: { dateDeleted: new Date() },
+					data: { dateDeleted: dayjs.utc().toDate() },
 					where: { id }
 				})
 				.then((res) => ({

@@ -6,6 +6,7 @@ import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
 import { error, fail, isRedirect, redirect } from '@sveltejs/kit';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
+import dayjs from 'dayjs';
 
 export const load: PageServerLoad = async (event) => {
 	try {
@@ -65,7 +66,7 @@ export const actions: Actions = {
 		try {
 			const formData = Object.fromEntries(await event.request.formData()) as { input: string };
 			const rawInput = JSON.parse(formData.input);
-			rawInput.mealDate = new Date(rawInput.mealDate);
+			rawInput.mealDate = dayjs.utc(rawInput.mealDate).toDate();
 			const result = addFoodSchema.safeParse(rawInput);
 
 			if (!result.success) {
@@ -86,7 +87,7 @@ export const actions: Actions = {
 			const input: FoodInput = {
 				id,
 				userId: event.locals.user.id ?? '',
-				mealDate: mealDate,
+				mealDate,
 				name: result.data.name,
 				serving,
 				fdcId,

@@ -54,6 +54,41 @@ export const addFoodSchema = z.object({
 		.nonempty('Serving must be provided!'),
 	nutrients: z.array(nutrientSchema).nonempty('Nutrients must be provided!')
 });
+export const addCustomFoodSchema = z.object({
+	name: z.string().nonoptional('Name is required!'),
+	calories: z.string({
+			error: (issue) => {
+				if (isNaN(parseFloat(`${issue.input}`))) return { message: 'Value must be numerical!' };
+			}
+		}).nonoptional('Calories are required!'),
+	carbs: z.string({
+			error: (issue) => {
+				if (isNaN(parseFloat(`${issue.input}`))) return { message: 'Value must be numerical!' };
+			}
+		}).nonoptional('Carbs are required!'),
+	protein: z.string({
+			error: (issue) => {
+				if (isNaN(parseFloat(`${issue.input}`))) return { message: 'Value must be numerical!' };
+			}
+		}).nonoptional('Protein is required!'),
+	fat: z.string({
+			error: (issue) => {
+				if (isNaN(parseFloat(`${issue.input}`))) return { message: 'Value must be numerical!' };
+			}
+		}).nonoptional('Fat is required!'),
+	serving: z
+		.string({
+			error: (issue) => {
+				if (isNaN(parseFloat(`${issue.input}`))) return { message: 'Value must be numerical!' };
+			}
+		})
+		.nonempty('Serving must be provided!'),
+	mealDate: z.string({
+		error: (issue) => {
+			if (!(new Date(issue.input as string) instanceof Date)) return { message: 'Value must be a date!' };
+		}
+	}).nonoptional('Meal date is required!'),
+})
 
 export const deleteFoodSchema = z.object({
 	id: z.number().nonoptional('ID is required!'),

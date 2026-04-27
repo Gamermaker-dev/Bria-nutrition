@@ -1,6 +1,7 @@
 import { userController } from '$lib/server/controllers';
 import { checkForErrors } from '$lib/util';
 import { error } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import { isDate } from 'util/types';
 import type { PageServerLoad } from './$types';
 
@@ -16,27 +17,26 @@ export const load: PageServerLoad = async (event) => {
 			groupBy?: string;
 		};
 
-		const TODAY = new Date();
-		const SEVEN_DAYS_AGO = new Date();
-		SEVEN_DAYS_AGO.setDate(SEVEN_DAYS_AGO.getDate() - 7);
-
-		const startDate =
+		let startDate =
 			params.startDate != undefined
-				? new Date(params.startDate)
-				: SEVEN_DAYS_AGO;
-		const endDate =
+				? dayjs.utc(params.startDate).toDate()
+				: dayjs.utc().subtract(7, 'days').toDate();
+		let endDate =
 			params.endDate != undefined
-				? new Date(params.endDate)
-				: TODAY;
+				? dayjs.utc(params.endDate).toDate()
+				: dayjs.utc().toDate();
 		const groupBy =
 			params.groupBy != undefined && ['year', 'month', 'date'].includes(params.groupBy)
 				? params.groupBy
 				: 'date';
 
-		if (!isDate(startDate) || !isDate(endDate)) throw error(400, { message: 'Bad request' });
+		if (!isDate(startDate)) startDate = dayjs.utc().toDate();
+		if (!isDate(endDate)) endDate = dayjs.utc().toDate();
 
 		const report = await userController.getHealthReport(userId, startDate, endDate);
 		checkForErrors(report);
+
+		console.log(report.data);
 
 		return { startDate, endDate, groupBy, report: report.data };
 	} catch (err) {

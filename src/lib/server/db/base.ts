@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 export class BaseModelController {
 	protected TABLE_NAME: string;
 	protected operation: string = '';
@@ -12,23 +14,23 @@ export class BaseModelController {
 	};
 
 	private logStart = () => {
-		const startTime: Date = new Date();
+		const startTime = dayjs.utc();
 		console.log(
-			`Begining operation ${this.operation} for ${this.TABLE_NAME} at ${startTime.toDateString()} ${startTime.toTimeString()}`
+			`Begining operation ${this.operation} for ${this.TABLE_NAME} at ${startTime.format('YYYY-MM-DD THH:mm:ssZ')}`
 		);
 	};
 
 	private logComplete = () => {
-		const completeTime: Date = new Date();
+		const completeTime = dayjs.utc();
 		console.log(
-			`Completed operation ${this.operation} for ${this.TABLE_NAME} at ${completeTime.toDateString()} ${completeTime.toTimeString()}`
+			`Completed operation ${this.operation} for ${this.TABLE_NAME} at ${completeTime.format('YYYY-MM-DD THH:mm:ssZ')}`
 		);
 	};
 
 	private logError = (error: string) => {
-		const errorTime: Date = new Date();
+		const errorTime = dayjs.utc();
 		console.error(
-			`Error occurred during operation ${this.operation} for ${this.TABLE_NAME} at ${errorTime.toDateString()} ${errorTime.toTimeString()}. Full error is ${error}`
+			`Error occurred during operation ${this.operation} for ${this.TABLE_NAME} at ${errorTime.format('YYYY-MM-DD THH:mm:ssZ')}. Full error is ${error}`
 		);
 	};
 

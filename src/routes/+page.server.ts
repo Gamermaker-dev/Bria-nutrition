@@ -2,6 +2,7 @@ import { foodController, mealController, userController } from '$lib/server/cont
 import { deleteFoodSchema } from '$lib/server/schemas';
 import { checkForErrors, createNotification, parseZErrors } from '$lib/util';
 import { error, fail } from '@sveltejs/kit';
+import dayjs from 'dayjs';
 import { isDate } from 'util/types';
 import z from 'zod';
 import type { Actions, PageServerLoad } from './$types';
@@ -11,10 +12,9 @@ export const load: PageServerLoad = async (event) => {
 		if (event.locals.user) {
 			const rawMealDate = event.url.searchParams.get('mealDate');
 
-			const TODAY = new Date();
-			let mealDate = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+			let mealDate = dayjs.utc().toDate();
 			if (rawMealDate != null) {
-				const decodedMealDate = new Date(decodeURI(rawMealDate));
+				const decodedMealDate = dayjs.utc(decodeURI(rawMealDate)).toDate();
 
 				if (isDate(decodedMealDate)) mealDate = decodedMealDate;
 			}

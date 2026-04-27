@@ -7,6 +7,7 @@
 	import NutritionForm from '$lib/components/NutritionForm.svelte';
 	import { isLoading } from '$lib/stores.js';
 	import { mdiGoogle, mdiUploadBox } from '@mdi/js';
+	import dayjs from 'dayjs';
 	import { untrack } from 'svelte';
 	import { Button, ButtonGroup, Dialog, TextField } from 'svelte-ux';
 
@@ -19,10 +20,9 @@
 		protein: 0,
 		fat: 0
 	});
-	const TODAY = new Date();
 
 	let serving = $state(1);
-	let mealDate = $state(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate()));
+	let mealDate = $state(dayjs().toDate());
 
 	$effect(() => {
 		if (form?.nutritionData != undefined) {
@@ -112,7 +112,12 @@
 					<input
 						type="hidden"
 						name="nutritionInput"
-						value={JSON.stringify({ ...infoInput, name, mealDate, serving })}
+						value={JSON.stringify({
+							...infoInput,
+							name,
+							mealDate: dayjs(mealDate).toDate(),
+							serving: `${serving}`
+						})}
 					/>
 					<Button type="submit" class="bg-emerald-500 text-white">Yes</Button>
 				</form>
