@@ -113,7 +113,10 @@
 						type="hidden"
 						name="nutritionInput"
 						value={JSON.stringify({
-							...infoInput,
+							calories: `${infoInput.calories}`,
+							carbs: `${infoInput.carbs}`,
+							protein: `${infoInput.protein}`,
+							fat: `${infoInput.fat}`,
 							name,
 							mealDate: dayjs(mealDate).toDate(),
 							serving: `${serving}`

@@ -158,10 +158,10 @@ export const actions: Actions = {
 				name: results.data.name,
 				serving: parseFloat(results.data.serving),
 				nutrients: [
-					{ nutrientId: 10, amount: parseFloat(results.data.calories) },
-					{ nutrientId: 7, amount: parseFloat(results.data.carbs) },
-					{ nutrientId: 5, amount: parseFloat(results.data.protein) },
-					{ nutrientId: 6, amount: parseFloat(results.data.fat) }
+					{ nutrientId: 10, amount: parseFloat(results.data.calories.toString()) },
+					{ nutrientId: 7, amount: parseFloat(results.data.carbs.toString()) },
+					{ nutrientId: 5, amount: parseFloat(results.data.protein.toString()) },
+					{ nutrientId: 6, amount: parseFloat(results.data.fat.toString()) }
 				]
 			};
 
